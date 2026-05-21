@@ -7,8 +7,16 @@
     <meta name="description" content="MeramotHub - Your trusted local home service booking platform in Bangladesh. Book verified electricians, plumbers, AC mechanics & more with transparent pricing and escrow-protected payments." />
     <meta name="keywords" content="home services, Bangladesh, electrician, plumber, AC mechanic, service booking, MeramotHub" />
     <meta name="author" content="MeramotHub" />
-    <meta name="theme-color" content="#0d9488" />
+    <meta name="theme-color" content="#2563eb" />
     <title>MeramotHub — Trusted Home Services in Bangladesh</title>
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
