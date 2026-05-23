@@ -1,137 +1,150 @@
-import { Shield, Users, Zap, MapPin, Star, Heart, Award, Target } from 'lucide-react';
+import { useEffect } from 'react';
 import './AboutPage.css';
 
+const STATS = [
+  { value: '500+', label: 'Verified Workers' },
+  { value: '10k+', label: 'Happy Customers' },
+  { value: '50+', label: 'Service Types' },
+  { value: '4.8★', label: 'Average Rating' },
+];
+
+const DIFFERENTIATORS = [
+  {
+    title: 'NID Verification',
+    desc: 'Every specialist undergoes mandatory national ID screening and area manager approval.',
+  },
+  {
+    title: 'Escrow Lock',
+    desc: 'Funds are securely held and only released to providers when you confirm total satisfaction.',
+  },
+  {
+    title: 'GPS Match',
+    desc: 'Instantly locate local specialists closest to your coordinates for rapid arrivals.',
+  },
+  {
+    title: 'Transparent Tariffs',
+    desc: 'Fixed pricing metrics for every service type. Zero hidden costs or sudden charges.',
+  },
+  {
+    title: 'Area Oversight',
+    desc: 'Dedicated local managers monitor quality indices and arbitrate disputes.',
+  },
+  {
+    title: 'Saved Workshops',
+    desc: 'Maintain a premium list of your favorite local specialists for immediate bookings.',
+  },
+];
+
 export default function AboutPage() {
+  // Intersection Observer scroll animation
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    const elements = document.querySelectorAll('.reveal');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => {
+      elements.forEach((el) => observer.unobserve(el));
+    };
+  }, []);
+
   return (
-    <div className="page-wrapper">
-      {/* Hero */}
-      <section className="about-hero">
+    <div className="dot-grid">
+      {/* ═══ HERO SECTION ═══ */}
+      <section className="about-hero-section">
         <div className="container">
-          <div className="about-hero-content">
-            <span className="section-tag">About MeramotHub</span>
-            <h1>Making Home Services <br /><span className="gradient-text">Trustworthy & Accessible</span></h1>
-            <p>
-              We connect verified local service providers with customers across Bangladesh,
-              ensuring transparent pricing, secure payments, and quality service delivery.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Mission */}
-      <section className="section">
-        <div className="container">
-          <div className="about-grid">
-            <div className="about-card">
-              <div className="about-card-icon" style={{ background: '#dcfce7', color: '#16a34a' }}>
-                <Target size={28} />
-              </div>
-              <h3>Our Mission</h3>
-              <p>
-                To empower local service workers by giving them a digital platform to showcase
-                their skills and connect with customers who need them, while ensuring fair
-                compensation and quality assurance.
-              </p>
+          <div className="about-hero-grid reveal">
+            <div className="about-hero-left">
+              <span className="caption-text" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                MeramotHub Platform
+              </span>
+              <h1>MAKING SERVICES TRUSTWORTHY</h1>
             </div>
-            <div className="about-card">
-              <div className="about-card-icon" style={{ background: '#dbeafe', color: '#2563eb' }}>
-                <Award size={28} />
-              </div>
-              <h3>Our Vision</h3>
+            <div className="about-hero-right">
               <p>
-                To become Bangladesh's most trusted home service marketplace, where every
-                service provider is verified, every price is transparent, and every customer
-                is satisfied.
-              </p>
-            </div>
-            <div className="about-card">
-              <div className="about-card-icon" style={{ background: '#fef3c7', color: '#d97706' }}>
-                <Heart size={28} />
-              </div>
-              <h3>Our Values</h3>
-              <p>
-                Trust through verification, fairness through escrow payments, and excellence
-                through continuous quality monitoring and customer feedback.
+                We connect NID-verified local service workers with households across Bangladesh, 
+                eliminating typical negotiation friction through transparent pricing structures and escrow protection.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It's Different */}
-      <section className="section" style={{ background: 'var(--bg-tertiary)' }}>
+      {/* ═══ MISSION & VISION & VALUES ═══ */}
+      <section className="section about-mission-section">
         <div className="container">
-          <div className="section-header">
-            <span className="section-tag">Why MeramotHub</span>
-            <h2 className="section-title">What Makes Us Different</h2>
-          </div>
-          <div className="diff-grid">
-            <div className="diff-item">
-              <Shield size={24} color="var(--primary-600)" />
-              <div>
-                <h4>NID-Verified Workers</h4>
-                <p>Every service provider is verified by our area managers through national ID verification.</p>
+          <div className="reveal">
+            <div className="mission-row">
+              <div className="mission-label">Our Mission</div>
+              <div className="mission-content">
+                <h3>Empowering Local Skillsets</h3>
+                <p>
+                  To empower skilled local workers by providing a unified digital interface 
+                  to showcase their craftsmanship and secure fair, reliable compensation.
+                </p>
               </div>
             </div>
-            <div className="diff-item">
-              <Zap size={24} color="var(--primary-600)" />
-              <div>
-                <h4>Escrow Payment System</h4>
-                <p>Payments are held securely until the job is completed to the customer's satisfaction.</p>
+
+            <div className="mission-row">
+              <div className="mission-label">Our Vision</div>
+              <div className="mission-content">
+                <h3>Sustained Service Integrity</h3>
+                <p>
+                  To cultivate the most trusted service ecosystems in the region, 
+                  characterized by total verification, fixed pricing matrices, and unmatched customer trust.
+                </p>
               </div>
             </div>
-            <div className="diff-item">
-              <MapPin size={24} color="var(--primary-600)" />
-              <div>
-                <h4>GPS-Based Matching</h4>
-                <p>Find the nearest available service provider using location-based search.</p>
-              </div>
-            </div>
-            <div className="diff-item">
-              <Star size={24} color="var(--primary-600)" />
-              <div>
-                <h4>Transparent Pricing</h4>
-                <p>Fixed prices for every service type. No hidden charges, no surprise fees.</p>
-              </div>
-            </div>
-            <div className="diff-item">
-              <Users size={24} color="var(--primary-600)" />
-              <div>
-                <h4>Multi-Layer Oversight</h4>
-                <p>Area managers and admins continuously monitor quality and handle disputes.</p>
-              </div>
-            </div>
-            <div className="diff-item">
-              <Heart size={24} color="var(--primary-600)" />
-              <div>
-                <h4>Priyo Workshop</h4>
-                <p>Save your favorite trusted service providers for quick rebooking.</p>
+
+            <div className="mission-row">
+              <div className="mission-label">Our Values</div>
+              <div className="mission-content">
+                <h3>Absolute Transparency</h3>
+                <p>
+                  We are guided by transparency, safety through escrow-backed transactions, 
+                  and rigorous local accountability structures.
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="section">
+      {/* ═══ WHAT MAKES US DIFFERENT ═══ */}
+      <section className="section about-diff-section">
         <div className="container">
-          <div className="about-stats">
-            <div className="about-stat-item">
-              <span className="about-stat-number">500+</span>
-              <span className="about-stat-label">Verified Workers</span>
-            </div>
-            <div className="about-stat-item">
-              <span className="about-stat-number">10,000+</span>
-              <span className="about-stat-label">Happy Customers</span>
-            </div>
-            <div className="about-stat-item">
-              <span className="about-stat-number">50+</span>
-              <span className="about-stat-label">Service Types</span>
-            </div>
-            <div className="about-stat-item">
-              <span className="about-stat-number">4.8★</span>
-              <span className="about-stat-label">Average Rating</span>
-            </div>
+          <div className="reveal">
+            <h2 className="h2-title">OUR CORE INTEGRITIES</h2>
+            <p className="caption-text" style={{ marginTop: '8px' }}>The standards we uphold across every request</p>
+          </div>
+
+          <div className="about-diff-grid reveal">
+            {DIFFERENTIATORS.map((diff, i) => (
+              <div className="about-diff-item" key={i}>
+                <h4>{diff.title}</h4>
+                <p>{diff.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ STATS SECTION ═══ */}
+      <section className="about-stats-section">
+        <div className="container">
+          <div className="about-stats-grid reveal">
+            {STATS.map((stat, i) => (
+              <div className="about-stat-box" key={i}>
+                <span className="about-stat-num">{stat.value}</span>
+                <span className="about-stat-lbl">{stat.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
