@@ -15,6 +15,10 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const isDashboard = ['/customer', '/provider', '/admin', '/manager'].some(
+    (p) => location.pathname.startsWith(p)
+  );
+
   // Dark/Light Theme State
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('theme');
@@ -84,17 +88,19 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="navbar-links">
-            <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
-              Home
-            </Link>
-            <Link to="/services" className={`nav-link ${location.pathname.startsWith('/services') ? 'active' : ''}`}>
-              Services
-            </Link>
-            <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
-              About
-            </Link>
-          </div>
+          {!isDashboard && (
+            <div className="navbar-links">
+              <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
+                Home
+              </Link>
+              <Link to="/services" className={`nav-link ${location.pathname.startsWith('/services') ? 'active' : ''}`}>
+                Services
+              </Link>
+              <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
+                About
+              </Link>
+            </div>
+          )}
 
           {/* Right side actions */}
           <div className="navbar-actions">
@@ -169,14 +175,16 @@ export default function Navbar() {
             )}
 
             {/* Mobile toggle */}
-            <button
-              className="mobile-hamburger"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              id="mobile-menu-toggle"
-              aria-label="Toggle navigation menu"
-            >
-              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+            {!isDashboard && (
+              <button
+                className="mobile-hamburger"
+                onClick={() => setMobileOpen(!mobileOpen)}
+                id="mobile-menu-toggle"
+                aria-label="Toggle navigation menu"
+              >
+                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            )}
           </div>
         </div>
       </nav>
