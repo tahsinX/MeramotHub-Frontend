@@ -1,361 +1,430 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Zap, Shield, Star, ArrowRight, MapPin, Clock,
-  Wrench, Droplets, Wind, Hammer, Paintbrush, Users,
-  CheckCircle, MessageCircle, Search, ChevronRight
-} from 'lucide-react';
+import { ArrowRight, Zap, Shield, UserCheck, CreditCard, Clock, Star, AlertCircle, Wrench } from 'lucide-react';
 import api from '../api/client';
 import './HomePage.css';
 
-const SKILL_ICONS = {
-  electrician: <Zap size={28} />,
-  plumber: <Droplets size={28} />,
-  ac_mechanic: <Wind size={28} />,
-  carpenter: <Hammer size={28} />,
-  painter: <Paintbrush size={28} />,
-  welder: <Wrench size={28} />,
-  mason: <Wrench size={28} />,
-  other: <Wrench size={28} />,
-};
+const STATIC_CATEGORIES = [
+  { name: 'Electrical Services', desc: 'High-precision fan, light, and power wiring diagnostics.', id: 'electrician' },
+  { name: 'Plumbing Services', desc: 'Expert pipe repairs, leak preventions, and fixture fittings.', id: 'plumber' },
+  { name: 'AC Services', desc: 'Elite AC cleaning, installation, and compressor diagnostics.', id: 'ac_mechanic' },
+  { name: 'Carpentry Services', desc: 'Fine wood repairs, premium doors, and cabinet restorations.', id: 'carpenter' },
+  { name: 'Painting Services', desc: 'Premium interior finishes and flawless waterproofing layers.', id: 'painter' },
+];
 
-const SKILL_COLORS = {
-  electrician: '#f59e0b',
-  plumber: '#3b82f6',
-  ac_mechanic: '#06b6d4',
-  carpenter: '#8b5cf6',
-  painter: '#ec4899',
-  welder: '#ef4444',
-  mason: '#6366f1',
-  other: '#64748b',
-};
+const PROCESS_STEPS = [
+  {
+    num: '01',
+    title: 'Select Category & Locate',
+    desc: 'Browse verified service profiles in your immediate local area with clear fixed rates.',
+  },
+  {
+    num: '02',
+    title: 'Lock Funds in Escrow',
+    desc: 'Your payment is safely held in escrow. No cash negotiations, total transparency.',
+  },
+  {
+    num: '03',
+    title: 'Verify & Release',
+    desc: 'Confirm the service was delivered perfectly to release funds directly to the expert.',
+  },
+];
 
-const HOW_IT_WORKS = [
+const TRUST_COLUMNS = [
   {
-    step: '01',
-    icon: <Search size={28} />,
-    title: 'Search Service',
-    desc: 'Browse from verified electricians, plumbers, AC mechanics and more in your area.',
+    icon: <UserCheck size={20} className="trust-icon" />,
+    title: 'Mandatory NID Screening',
+    desc: 'Every professional undergoes strict national identity checks and local area manager approval.',
   },
   {
-    step: '02',
-    icon: <Users size={28} />,
-    title: 'Choose Provider',
-    desc: 'Compare ratings, reviews, and pricing. Pick the best professional for your needs.',
+    icon: <CreditCard size={20} className="trust-icon" />,
+    title: '100% Secure Escrow',
+    desc: 'Funds are only released once you sign off on the quality of work. Zero upfront risk.',
   },
   {
-    step: '03',
-    icon: <Clock size={28} />,
-    title: 'Book & Schedule',
-    desc: 'Schedule at your convenience or get instant help with emergency booking.',
+    icon: <Clock size={20} className="trust-icon" />,
+    title: 'Rapid Local Dispatch',
+    desc: 'Our system routes your request to nearby checked specialists for prompt arrival.',
   },
   {
-    step: '04',
-    icon: <CheckCircle size={28} />,
-    title: 'Get It Done',
-    desc: 'Service completed with escrow protection. Pay only when you are satisfied.',
+    icon: <Shield size={20} className="trust-icon" />,
+    title: 'Pre-Vetted Pricing',
+    desc: 'No sudden surcharges or bargaining. Pre-defined rates per unit keep costs completely predictable.',
   },
 ];
 
 const TESTIMONIALS = [
   {
-    name: 'Rafiq Ahmed',
-    role: 'Customer, Dhaka',
-    text: 'MeramotHub saved me during an AC emergency. The technician arrived within 30 minutes and fixed it perfectly!',
-    rating: 5,
+    quote: "During a major plumbing emergency late at night, MeramotHub connected us with a checked specialist in under 20 minutes. Exceptional professionalism and zero bargaining.",
+    initials: "AH",
+    name: "Afridi Hasan",
+    role: "Mirpur Resident"
   },
   {
-    name: 'Shahid Hasan',
-    role: 'Electrician',
-    text: 'As a service provider, MeramotHub gives me steady work and fair payments. The escrow system builds trust.',
-    rating: 5,
+    quote: "As an independent AC mechanic, the escrow system protects my income. I focus on quality craft, knowing my compensation is already locked and guaranteed.",
+    initials: "SR",
+    name: "Sajid Rahman",
+    role: "Vetted AC Technician"
   },
   {
-    name: 'Fatema Begum',
-    role: 'Customer, Chittagong',
-    text: 'I love the transparent pricing. No more haggling or worrying about overcharging. Highly recommended!',
-    rating: 4,
-  },
+    quote: "Booking was seamless. Vetted electrician arrived on time, wore a mask, and charged exactly the pre-defined matrix tariff. Outstanding experience.",
+    initials: "NS",
+    name: "Nusrat Sharmin",
+    role: "Uttara Customer"
+  }
 ];
+
+function CountUp({ end, duration = 1200, suffix = "" }) {
+  const [count, setCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setHasStarted(true);
+        observer.unobserve(entry.target);
+      }
+    }, { threshold: 0.1 });
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+    
+    let start = 0;
+    const endNum = parseFloat(end.replace(/[^0-9.]/g, ''));
+    if (isNaN(endNum)) {
+      setCount(end);
+      return;
+    }
+
+    const steps = 50;
+    const increment = endNum / steps;
+    let step = 0;
+
+    const timer = setInterval(() => {
+      step++;
+      if (step >= steps) {
+        setCount(endNum);
+        clearInterval(timer);
+      } else {
+        setCount((prev) => Math.min(endNum, Math.floor(step * increment)));
+      }
+    }, duration / steps);
+
+    return () => clearInterval(timer);
+  }, [hasStarted, end, duration]);
+
+  return (
+    <span ref={ref} className="stat-count">
+      {count}
+      {suffix}
+    </span>
+  );
+}
 
 export default function HomePage() {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    api.getCategories().then(setCategories).catch(() => {});
+    api.getCategories()
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.data || [];
+        setCategories(list);
+      })
+      .catch(() => {});
   }, []);
 
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    const elements = document.querySelectorAll('.reveal');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => {
+      elements.forEach((el) => observer.unobserve(el));
+    };
+  }, [categories]);
+
+  const displayCategories = categories.length > 0 ? categories : STATIC_CATEGORIES;
+
   return (
-    <div className="page-wrapper">
-      {/* ═══ HERO ═══ */}
-      <section className="hero" id="hero-section">
-        <div className="hero-bg">
-          <div className="hero-gradient" />
-          <div className="hero-pattern" />
-          <div className="hero-orb hero-orb-1" />
-          <div className="hero-orb hero-orb-2" />
-          <div className="hero-orb hero-orb-3" />
-        </div>
+    <div className="homepage-wrapper">
+      {/* ═══ HERO SECTION ═══ */}
+      <section className="hero-section" id="hero">
+        <div className="container hero-container">
+          <div className="hero-split-layout">
+            
+            {/* Left Content */}
+            <div className="hero-left reveal">
+              <div className="trusted-badge-pill animate-fade-in">
+                <span className="pill-dot">⚡</span>
+                <span className="pill-text">Trusted by 10,000+ Customers</span>
+              </div>
+              <h1 className="hero-headline">
+                Verified professionals.<br />
+                Escrow protected.
+              </h1>
+              <p className="hero-subtext">
+                Book NID-verified electricians, plumbers, and local technicians with full financial safety.
+                Transparent pricing, zero negotiations, and reliable service guaranteed.
+              </p>
+              
+              <div className="hero-actions">
+                <Link to="/services" className="btn btn-primary btn-lg" id="hero-cta-book">
+                  Book A Service Now
+                  <ArrowRight size={16} />
+                </Link>
+                <Link to="/register" className="btn btn-outline btn-lg" id="hero-cta-join">
+                  Join as Service Provider
+                </Link>
+              </div>
 
-        <div className="hero-content container">
-          <div className="hero-text">
-            <div className="hero-badge animate-fade-in-up">
-              <Zap size={14} />
-              <span>Trusted by 10,000+ Customers</span>
-            </div>
-            <h1 className="hero-title animate-fade-in-up stagger-1">
-              Your Trusted
-              <span className="hero-highlight"> Home Service</span>
-              <br />Partner in Bangladesh
-            </h1>
-            <p className="hero-subtitle animate-fade-in-up stagger-2">
-              Book verified electricians, plumbers, AC mechanics & more. 
-              Transparent pricing, secure payments, and quality guaranteed.
-            </p>
-            <div className="hero-actions animate-fade-in-up stagger-3">
-              <Link to="/services" className="btn btn-primary btn-lg" id="hero-cta-services">
-                Explore Services
-                <ArrowRight size={18} />
-              </Link>
-              <Link to="/register" className="btn btn-outline btn-lg" id="hero-cta-register">
-                Join as Provider
-              </Link>
-            </div>
-            <div className="hero-stats animate-fade-in-up stagger-4">
-              <div className="hero-stat">
-                <span className="hero-stat-value">500+</span>
-                <span className="hero-stat-label">Verified Workers</span>
-              </div>
-              <div className="hero-stat-divider" />
-              <div className="hero-stat">
-                <span className="hero-stat-value">50+</span>
-                <span className="hero-stat-label">Service Types</span>
-              </div>
-              <div className="hero-stat-divider" />
-              <div className="hero-stat">
-                <span className="hero-stat-value">4.8★</span>
-                <span className="hero-stat-label">Avg. Rating</span>
+              <div className="hero-trust-indicators">
+                <div className="trust-indicator-item">
+                  <Shield size={14} className="indicator-icon" />
+                  <span>100% NID-Verified</span>
+                </div>
+                <div className="trust-indicator-divider" />
+                <div className="trust-indicator-item">
+                  <CreditCard size={14} className="indicator-icon" />
+                  <span>Escrow Payments</span>
+                </div>
+                <div className="trust-indicator-divider" />
+                <div className="trust-indicator-item">
+                  <Zap size={14} className="indicator-icon" />
+                  <span>Transparent Rates</span>
+                </div>
               </div>
             </div>
+
+            {/* Right Collage */}
+            <div className="hero-right reveal">
+              <div className="collage-background-mesh" />
+              <div className="floating-collage-container">
+                {/* Card 1: Electrician */}
+                <div className="floating-card card-electrician animate-float-slow">
+                  <div className="card-status-row">
+                    <span className="status-indicator online" />
+                    <span className="status-text">Available</span>
+                  </div>
+                  <div className="card-body-row">
+                    <div className="provider-icon bg-blue-subtle">
+                      <Wrench size={16} className="text-blue" />
+                    </div>
+                    <div>
+                      <h4 className="provider-name">Tanvir Rahman</h4>
+                      <p className="provider-spec">Certified Electrician</p>
+                    </div>
+                  </div>
+                  <div className="card-meta-row">
+                    <div className="rating">
+                      <Star size={12} fill="currentColor" />
+                      <span>4.9</span>
+                    </div>
+                    <span className="price-tag">৳450/hr</span>
+                  </div>
+                </div>
+
+                {/* Card 2: Plumber */}
+                <div className="floating-card card-plumber animate-float-medium">
+                  <div className="card-status-row">
+                    <span className="status-indicator busy" />
+                    <span className="status-text">On Duty</span>
+                  </div>
+                  <div className="card-body-row">
+                    <div className="provider-icon bg-gold-subtle">
+                      <Wrench size={16} className="text-gold" />
+                    </div>
+                    <div>
+                      <h4 className="provider-name">Kamil Khan</h4>
+                      <p className="provider-spec">Plumbing Specialist</p>
+                    </div>
+                  </div>
+                  <div className="card-meta-row">
+                    <div className="rating">
+                      <Star size={12} fill="currentColor" />
+                      <span>4.8</span>
+                    </div>
+                    <span className="price-tag">৳500/hr</span>
+                  </div>
+                </div>
+
+                {/* Card 3: AC Mech */}
+                <div className="floating-card card-ac animate-float-fast">
+                  <div className="card-status-row">
+                    <span className="status-indicator online" />
+                    <span className="status-text">Available</span>
+                  </div>
+                  <div className="card-body-row">
+                    <div className="provider-icon bg-navy-subtle">
+                      <Wrench size={16} className="text-navy" />
+                    </div>
+                    <div>
+                      <h4 className="provider-name">Imran Hosein</h4>
+                      <p className="provider-spec">AC Diagnostics Expert</p>
+                    </div>
+                  </div>
+                  <div className="card-meta-row">
+                    <div className="rating">
+                      <Star size={12} fill="currentColor" />
+                      <span>5.0</span>
+                    </div>
+                    <span className="price-tag">৳600/hr</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
+        </div>
+      </section>
 
-          <div className="hero-visual animate-fade-in-up stagger-3">
-            <div className="hero-card-stack">
-              <div className="hero-floating-card card-1">
-                <div className="hfc-icon" style={{ background: '#dcfce7', color: '#16a34a' }}>
-                  <Shield size={20} />
-                </div>
-                <div>
-                  <div className="hfc-title">Escrow Protected</div>
-                  <div className="hfc-desc">100% secure payment</div>
-                </div>
-              </div>
-              <div className="hero-floating-card card-2">
-                <div className="hfc-icon" style={{ background: '#fef3c7', color: '#d97706' }}>
-                  <Star size={20} />
-                </div>
-                <div>
-                  <div className="hfc-title">Top Rated</div>
-                  <div className="hfc-desc">4.8/5 average rating</div>
-                </div>
-              </div>
-              <div className="hero-floating-card card-3">
-                <div className="hfc-icon" style={{ background: '#dbeafe', color: '#2563eb' }}>
-                  <MapPin size={20} />
-                </div>
-                <div>
-                  <div className="hfc-title">Near You</div>
-                  <div className="hfc-desc">GPS-based search</div>
-                </div>
-              </div>
-              <div className="hero-main-visual">
-                <div className="hmv-inner">
-                  <Wrench size={64} />
-                  <h3>MeramotHub</h3>
-                  <p>Your service, simplified</p>
-                </div>
-              </div>
+      {/* ═══ STATS BAR ═══ */}
+      <section className="stats-bar-section" id="stats">
+        <div className="container">
+          <div className="stats-grid">
+            <div className="stat-box-item">
+              <CountUp end="500" suffix="+" />
+              <span className="stat-label">Verified Specialists</span>
+            </div>
+            <div className="stat-box-item">
+              <CountUp end="10" suffix="k+" />
+              <span className="stat-label">Successful Bookings</span>
+            </div>
+            <div className="stat-box-item">
+              <CountUp end="99" suffix=".8%" />
+              <span className="stat-label">Resolution Rate</span>
+            </div>
+            <div className="stat-box-item">
+              <CountUp end="100" suffix="%" />
+              <span className="stat-label">Payment Security</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ SERVICES ═══ */}
-      <section className="section" id="services-section">
+      {/* ═══ SERVICES SECTION (ASYMMETRIC GRID) ═══ */}
+      <section className="section services-grid-section" id="services">
         <div className="container">
-          <div className="section-header">
-            <span className="section-tag">Our Services</span>
-            <h2 className="section-title">What We Offer</h2>
-            <p className="section-subtitle">
-              Professional, verified service providers for all your home maintenance needs
-            </p>
+          <div className="section-header-block reveal">
+            <h2 className="section-headline">Services on demand.</h2>
+            <p className="section-desc">Select an area of expertise to locate top nearby providers.</p>
           </div>
 
-          <div className="services-grid">
-            {categories.length > 0
-              ? categories.map((cat, i) => (
-                  <Link
-                    to={`/services?category=${cat.id}`}
-                    key={cat.id}
-                    className="service-card card card-interactive animate-fade-in-up"
-                    style={{ animationDelay: `${i * 0.1}s` }}
-                  >
-                    <div
-                      className="service-icon"
-                      style={{
-                        background: `${SKILL_COLORS[cat.skill_required] || '#64748b'}18`,
-                        color: SKILL_COLORS[cat.skill_required] || '#64748b',
-                      }}
-                    >
-                      {SKILL_ICONS[cat.skill_required] || <Wrench size={28} />}
+          <div className="services-asymmetric-grid reveal">
+            {displayCategories.slice(0, 5).map((cat, idx) => {
+              const bgColors = [
+                'service-bg-electrician',
+                'service-bg-plumber',
+                'service-bg-ac',
+                'service-bg-carpenter',
+                'service-bg-painting'
+              ];
+              const currentBg = bgColors[idx] || 'service-bg-default';
+              
+              return (
+                <Link 
+                  to={cat.id ? `/services?category=${cat.id}` : '/services'} 
+                  key={cat.id || idx} 
+                  className={`service-grid-card ${currentBg}`}
+                >
+                  <div className="service-card-top">
+                    <span className="service-num">0{idx + 1}</span>
+                    <Wrench size={16} className="service-card-icon" />
+                  </div>
+                  <div className="service-card-bottom">
+                    <h3 className="service-card-name">{cat.name}</h3>
+                    <p className="service-card-desc">{cat.description || cat.desc}</p>
+                    <div className="service-card-link">
+                      <span>Book Service</span>
+                      <ArrowRight size={14} />
                     </div>
-                    <h3>{cat.name}</h3>
-                    <p>{cat.description}</p>
-                    <span className="service-card-link">
-                      View Services <ChevronRight size={16} />
-                    </span>
-                  </Link>
-                ))
-              : /* Fallback static categories */
-                [
-                  { name: 'Electrical Services', desc: 'Fan, light and wiring solutions', icon: 'electrician' },
-                  { name: 'Plumbing Services', desc: 'Fixing leaks, pipes and fittings', icon: 'plumber' },
-                  { name: 'AC Services', desc: 'Installation, repair and maintenance', icon: 'ac_mechanic' },
-                  { name: 'Carpentry Services', desc: 'Furniture repair, door/window fixing', icon: 'carpenter' },
-                  { name: 'Painting Services', desc: 'Wall painting and waterproofing', icon: 'painter' },
-                ].map((cat, i) => (
-                  <Link
-                    to="/services"
-                    key={i}
-                    className="service-card card card-interactive animate-fade-in-up"
-                    style={{ animationDelay: `${i * 0.1}s` }}
-                  >
-                    <div
-                      className="service-icon"
-                      style={{
-                        background: `${SKILL_COLORS[cat.icon]}18`,
-                        color: SKILL_COLORS[cat.icon],
-                      }}
-                    >
-                      {SKILL_ICONS[cat.icon]}
-                    </div>
-                    <h3>{cat.name}</h3>
-                    <p>{cat.desc}</p>
-                    <span className="service-card-link">
-                      View Services <ChevronRight size={16} />
-                    </span>
-                  </Link>
-                ))}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* ═══ HOW IT WORKS ═══ */}
-      <section className="section how-it-works-section" id="how-it-works">
+      {/* ═══ PROCESS SECTION (WATERLINE NUMBERS) ═══ */}
+      <section className="section process-section-light" id="process">
         <div className="container">
-          <div className="section-header">
-            <span className="section-tag">How It Works</span>
-            <h2 className="section-title">Simple 4-Step Process</h2>
-            <p className="section-subtitle">
-              From search to service completion — all in a few taps
-            </p>
+          <div className="section-header-block reveal">
+            <h2 className="section-headline">How we operate.</h2>
+            <p className="section-desc">A highly organized model designed for absolute integrity.</p>
           </div>
 
-          <div className="steps-grid">
-            {HOW_IT_WORKS.map((step, i) => (
-              <div
-                key={i}
-                className="step-card animate-fade-in-up"
-                style={{ animationDelay: `${i * 0.15}s` }}
-              >
-                <div className="step-number">{step.step}</div>
-                <div className="step-icon-wrap">{step.icon}</div>
-                <h3>{step.title}</h3>
-                <p>{step.desc}</p>
-                {i < HOW_IT_WORKS.length - 1 && <div className="step-connector" />}
+          <div className="process-waterline-flow reveal">
+            <div className="process-line-connector" />
+            {PROCESS_STEPS.map((step, idx) => (
+              <div className="process-waterline-card" key={idx}>
+                <span className="waterline-large-num">{step.num}</span>
+                <div className="process-card-content">
+                  <h3 className="process-step-title">{step.title}</h3>
+                  <p className="process-step-desc">{step.desc}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ FEATURES ═══ */}
-      <section className="section features-section" id="features-section">
+      {/* ═══ WHY CHOOSE US (TRUST GRID) ═══ */}
+      <section className="section trust-section" id="why-us">
         <div className="container">
-          <div className="section-header">
-            <span className="section-tag">Why Choose Us</span>
-            <h2 className="section-title">Built for Trust & Transparency</h2>
+          <div className="section-header-block reveal">
+            <h2 className="section-headline">Why MeramotHub?</h2>
+            <p className="section-desc">Setting the benchmark for secure domestic maintenance in Bangladesh.</p>
           </div>
 
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon-wrap" style={{ background: '#dcfce7', color: '#16a34a' }}>
-                <Shield size={24} />
+          <div className="trust-four-grid reveal">
+            {TRUST_COLUMNS.map((col, idx) => (
+              <div className="trust-card-item" key={idx}>
+                <div className="trust-icon-container">
+                  {col.icon}
+                </div>
+                <h3 className="trust-card-title">{col.title}</h3>
+                <p className="trust-card-desc">{col.desc}</p>
               </div>
-              <h3>Escrow Payment</h3>
-              <p>Your money is held securely until the job is done right. No risk, no worries.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon-wrap" style={{ background: '#dbeafe', color: '#2563eb' }}>
-                <CheckCircle size={24} />
-              </div>
-              <h3>Verified Workers</h3>
-              <p>Every service provider is NID-verified by our area managers before they start.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon-wrap" style={{ background: '#fef3c7', color: '#d97706' }}>
-                <Star size={24} />
-              </div>
-              <h3>Transparent Pricing</h3>
-              <p>Fixed pricing for every service. No hidden charges, no surprise fees.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon-wrap" style={{ background: '#f3e8ff', color: '#7c3aed' }}>
-                <MapPin size={24} />
-              </div>
-              <h3>GPS-Based Search</h3>
-              <p>Find nearby verified workers instantly based on your location.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon-wrap" style={{ background: '#fce7f3', color: '#db2777' }}>
-                <MessageCircle size={24} />
-              </div>
-              <h3>AI Chatbot</h3>
-              <p>Our AI assistant helps you find the right service provider for your needs.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon-wrap" style={{ background: '#fee2e2', color: '#dc2626' }}>
-                <Zap size={24} />
-              </div>
-              <h3>Emergency Service</h3>
-              <p>Need urgent help? Use our instant booking for immediate assistance.</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ═══ TESTIMONIALS ═══ */}
-      <section className="section testimonials-section" id="testimonials">
+      <section className="section testimonials-minimal-section" id="testimonials">
         <div className="container">
-          <div className="section-header">
-            <span className="section-tag">Testimonials</span>
-            <h2 className="section-title">What Our Users Say</h2>
+          <div className="section-header-block reveal">
+            <h2 className="section-headline">Customer reviews.</h2>
+            <p className="section-desc">Real experiences from customers and vetted service partners.</p>
           </div>
 
-          <div className="testimonials-grid">
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="testimonial-card card animate-fade-in-up" style={{ animationDelay: `${i * 0.15}s` }}>
-                <div className="testimonial-stars">
-                  {[...Array(5)].map((_, j) => (
-                    <Star key={j} size={16} fill={j < t.rating ? '#fbbf24' : 'none'} color={j < t.rating ? '#fbbf24' : '#cbd5e1'} />
-                  ))}
-                </div>
-                <p className="testimonial-text">"{t.text}"</p>
-                <div className="testimonial-author">
-                  <div className="testimonial-avatar">{t.name.charAt(0)}</div>
+          <div className="testimonials-three-grid reveal">
+            {TESTIMONIALS.map((t, idx) => (
+              <div className="testimonial-card-minimal" key={idx}>
+                <p className="testimonial-card-quote">“{t.quote}”</p>
+                <div className="testimonial-card-author">
+                  <div className="author-avatar-initials">
+                    {t.initials}
+                  </div>
                   <div>
-                    <div className="testimonial-name">{t.name}</div>
-                    <div className="testimonial-role">{t.role}</div>
+                    <h4 className="author-name">{t.name}</h4>
+                    <p className="author-role">{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -364,25 +433,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ CTA ═══ */}
-      <section className="cta-section" id="cta-section">
+      {/* ═══ CTA SECTION ═══ */}
+      <section className="section home-cta-section" id="cta">
         <div className="container">
-          <div className="cta-card">
-            <div className="cta-bg-pattern" />
-            <h2>Ready to Get Started?</h2>
-            <p>Join thousands of satisfied customers and trusted service providers on MeramotHub.</p>
-            <div className="cta-actions">
-              <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: 'var(--primary-700)', fontWeight: 700 }}>
-                Create Account
-                <ArrowRight size={18} />
+          <div className="cta-panel-dark reveal">
+            <div className="cta-panel-mesh" />
+            <h2 className="cta-panel-title">
+              Ready to hire verified local technicians with escrow security?
+            </h2>
+            <p className="cta-panel-subtitle">
+              Creating an account takes less than a minute. Secure your bookings today.
+            </p>
+            <div className="cta-panel-actions">
+              <Link to="/register" className="btn btn-primary btn-lg">
+                <Zap size={14} fill="currentColor" /> Create Your Account
               </Link>
-              <Link to="/services" className="btn btn-lg" style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: '2px solid rgba(255,255,255,0.3)' }}>
-                Browse Services
+              <Link to="/services" className="btn btn-outline btn-lg cta-outline-dark">
+                Explore Services
               </Link>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ═══ MOBILE FLOATING CTA ═══ */}
+      <Link to="/services" className="mobile-floating-booking-btn" id="mobile-floating-booking-btn">
+        <Zap size={14} fill="currentColor" /> Book Now
+      </Link>
     </div>
   );
 }
