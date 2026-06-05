@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import './Navbar.css';
 
-export default function Navbar() {
+export default function Navbar({ isDashboard }) {
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -58,6 +58,16 @@ export default function Navbar() {
       case 'area_manager': return '/manager';
       case 'service_provider': return '/provider';
       default: return '/customer';
+    }
+  };
+
+  const getProfilePath = () => {
+    if (!user) return '/login';
+    switch (user.role) {
+      case 'admin': return '/admin/profile';
+      case 'area_manager': return '/manager/profile';
+      case 'service_provider': return '/provider/account';
+      default: return '/customer/profile';
     }
   };
 
@@ -186,23 +196,28 @@ export default function Navbar() {
               </button>
             )}
           </div>
-        </div>
-      </nav>
+          <span className="logo-text">
+            Meramot<span className="logo-accent">Hub</span>
+          </span>
+        </Link>
 
-      {/* Mobile Slide Overlay */}
-      <div className={`mobile-dropdown-panel ${mobileOpen ? 'open' : ''}`} id="mobile-menu">
-        <div className="mobile-links-col">
-          <Link to="/" className={`mobile-nav-link ${location.pathname === '/' ? 'active' : ''}`}>
-            Home
-          </Link>
-          <Link to="/services" className={`mobile-nav-link ${location.pathname.startsWith('/services') ? 'active' : ''}`}>
-            Services
-          </Link>
-          <Link to="/about" className={`mobile-nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
-            About
-          </Link>
-        </div>
-        <div className="mobile-actions-col">
+        {/* Desktop Nav */}
+        {!isDashboard && (
+          <div className="navbar-links">
+            <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
+              Home
+            </Link>
+            <Link to="/services" className={`nav-link ${location.pathname.startsWith('/services') ? 'active' : ''}`}>
+              Services
+            </Link>
+            <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
+              About
+            </Link>
+          </div>
+        )}
+
+        {/* Right side */}
+        <div className="navbar-actions">
           {isAuthenticated ? (
             <>
               <Link to={getDashboardPath()} className="btn btn-outline btn-lg" style={{ width: '100%' }}>
@@ -211,7 +226,38 @@ export default function Navbar() {
               <button className="btn btn-outline btn-lg danger" onClick={handleLogout} style={{ width: '100%', borderColor: 'var(--danger)', color: 'var(--danger)' }}>
                 Sign Out
               </button>
-            </>
+
+              {profileOpen && (
+                <>
+                  <div className="profile-overlay" onClick={() => setProfileOpen(false)} />
+                  <div className="profile-dropdown" id="profile-dropdown">
+                    <div className="dropdown-header">
+                      <div className="dropdown-avatar">
+                        {user.full_name?.charAt(0)?.toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="dropdown-name">{user.full_name}</div>
+                        <div className="dropdown-phone">{user.phone_number}</div>
+                      </div>
+                    </div>
+                    <div className="dropdown-divider" />
+                    <Link to={getDashboardPath()} className="dropdown-item">
+                      <LayoutDashboard size={16} />
+                      Dashboard
+                    </Link>
+                    <Link to={getProfilePath()} className="dropdown-item">
+                      <User size={16} />
+                      My Profile
+                    </Link>
+                    <div className="dropdown-divider" />
+                    <button className="dropdown-item danger" onClick={handleLogout}>
+                      <LogOut size={16} />
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           ) : (
             <>
               <Link to="/login" className="btn btn-outline btn-lg" style={{ width: '100%' }}>
@@ -224,6 +270,33 @@ export default function Navbar() {
           )}
         </div>
       </div>
-    </>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="mobile-menu" id="mobile-menu">
+          {!isDashboard && (
+            <>
+              <Link to="/" className="mobile-link">Home</Link>
+              <Link to="/services" className="mobile-link">Services</Link>
+              <Link to="/about" className="mobile-link">About</Link>
+            </>
+          )}
+          {isAuthenticated ? (
+            <>
+              <Link to={getDashboardPath()} className="mobile-link">Dashboard</Link>
+              <Link to={getProfilePath()} className="mobile-link">Profile</Link>
+              <button className="mobile-link danger" onClick={handleLogout}>Sign Out</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="mobile-link">Sign In</Link>
+              <Link to="/register" className="btn btn-primary" style={{ margin: '8px 24px' }}>
+                Get Started
+              </Link>
+            </>
+          )}
+        </div>
+      )}
+    </nav>
   );
 }

@@ -44,17 +44,25 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const updateUser = useCallback((updated) => {
+    setUser(prev => prev ? { ...prev, ...updated } : prev);
+  }, []);
+
   const value = {
     user,
     loading,
     login,
     register,
     logout,
+    updateUser,
+    fetchUser,
     isAuthenticated: !!user,
     isCustomer: user?.role === 'customer',
     isProvider: user?.role === 'service_provider',
     isAdmin: user?.role === 'admin',
     isManager: user?.role === 'area_manager',
+    isVerified: user?.is_verified === true,
+    isApproved: user?.is_approved === true,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

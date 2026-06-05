@@ -55,6 +55,13 @@ class ApiClient {
     });
   }
 
+  upload(endpoint, formData) {
+    return this.request(endpoint, {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
   patch(endpoint, data) {
     return this.request(endpoint, {
       method: 'PATCH',
@@ -95,6 +102,10 @@ class ApiClient {
     return this.get('/auth/me');
   }
 
+  updateProfile(data) {
+    return this.patch('/auth/me', data);
+  }
+
   logout() {
     this.removeToken();
   }
@@ -113,6 +124,21 @@ class ApiClient {
     return this.get(`/services/items/${id}`);
   }
 
+  createServiceItem(data) {
+    return this.post('/services/items', data);
+  }
+
+  getMyServiceItems() {
+    return this.get('/services/items/my');
+  }
+
+  toggleServiceItemStatus(itemId) {
+    return this.patch(`/services/items/${itemId}/status`);
+  }
+
+  editServiceItem(itemId, data) {
+    return this.patch(`/services/items/${itemId}/edit`, data);
+  }
   // ──── Providers ────
   getProviders() {
     return this.get('/providers/');
@@ -165,6 +191,10 @@ class ApiClient {
 
   completeBooking(id) {
     return this.patch(`/bookings/${id}/complete`);
+  }
+
+  confirmBooking(id) {
+    return this.patch(`/bookings/${id}/confirm`);
   }
 
   cancelBooking(id) {
@@ -241,6 +271,14 @@ class ApiClient {
 
   getAreaManagerStats() {
     return this.get('/admin/area-manager/stats');
+  }
+
+  approveProvider(id) {
+    return this.patch(`/admin/providers/${id}/approve`);
+  }
+
+  getVerifiedProviders() {
+    return this.get('/admin/providers/verified');
   }
 
   // ──── Chatbot ────
