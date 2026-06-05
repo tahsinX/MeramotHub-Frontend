@@ -192,3 +192,4 @@ export default function Navbar({ isDashboard }) {
     </nav>
   );
 }
+/*end of file */
