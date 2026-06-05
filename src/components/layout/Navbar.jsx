@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import './Navbar.css';
 
-export default function Navbar() {
+export default function Navbar({ isDashboard }) {
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -41,6 +41,16 @@ export default function Navbar() {
     }
   };
 
+  const getProfilePath = () => {
+    if (!user) return '/login';
+    switch (user.role) {
+      case 'admin': return '/admin/profile';
+      case 'area_manager': return '/manager/profile';
+      case 'service_provider': return '/provider/account';
+      default: return '/customer/profile';
+    }
+  };
+
   const getRoleName = () => {
     if (!user) return '';
     const map = {
@@ -66,17 +76,19 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="navbar-links">
-          <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
-            Home
-          </Link>
-          <Link to="/services" className={`nav-link ${location.pathname.startsWith('/services') ? 'active' : ''}`}>
-            Services
-          </Link>
-          <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
-            About
-          </Link>
-        </div>
+        {!isDashboard && (
+          <div className="navbar-links">
+            <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
+              Home
+            </Link>
+            <Link to="/services" className={`nav-link ${location.pathname.startsWith('/services') ? 'active' : ''}`}>
+              Services
+            </Link>
+            <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
+              About
+            </Link>
+          </div>
+        )}
 
         {/* Right side */}
         <div className="navbar-actions">
@@ -115,7 +127,7 @@ export default function Navbar() {
                       <LayoutDashboard size={16} />
                       Dashboard
                     </Link>
-                    <Link to={getDashboardPath()} className="dropdown-item">
+                    <Link to={getProfilePath()} className="dropdown-item">
                       <User size={16} />
                       My Profile
                     </Link>
@@ -154,12 +166,17 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="mobile-menu" id="mobile-menu">
-          <Link to="/" className="mobile-link">Home</Link>
-          <Link to="/services" className="mobile-link">Services</Link>
-          <Link to="/about" className="mobile-link">About</Link>
+          {!isDashboard && (
+            <>
+              <Link to="/" className="mobile-link">Home</Link>
+              <Link to="/services" className="mobile-link">Services</Link>
+              <Link to="/about" className="mobile-link">About</Link>
+            </>
+          )}
           {isAuthenticated ? (
             <>
               <Link to={getDashboardPath()} className="mobile-link">Dashboard</Link>
+              <Link to={getProfilePath()} className="mobile-link">Profile</Link>
               <button className="mobile-link danger" onClick={handleLogout}>Sign Out</button>
             </>
           ) : (

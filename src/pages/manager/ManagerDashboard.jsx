@@ -7,6 +7,7 @@ import {
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
+import ProfilePage from '../shared/ProfilePage';
 import '../customer/CustomerDashboard.css';
 
 const NAV_ITEMS = [
@@ -18,13 +19,14 @@ const NAV_ITEMS = [
       { name: 'Complaints', path: '/manager/complaints', icon: <AlertTriangle size={18} /> },
     ],
   },
+
 ];
 
 function StatusBadge({ status }) {
   const map = {
     pending: 'badge-warning', verified: 'badge-success', rejected: 'badge-danger',
     open: 'badge-warning', assigned: 'badge-info', resolved: 'badge-success',
-    dismissed: 'badge-neutral',
+    dismissed: 'badge-neutral', prog: 'badge-info',
   };
   return <span className={`badge ${map[status] || 'badge-neutral'}`}>{status}</span>;
 }
@@ -218,13 +220,13 @@ function Complaints() {
               {c.status !== 'resolved' && c.status !== 'dismissed' && (
                 <div className="booking-card-actions">
                   <button className="btn btn-primary btn-sm" onClick={() => handleResolve(c.id, 'refund')}>
-                    Refund Customer
+                    Refund
                   </button>
                   <button className="btn btn-secondary btn-sm" onClick={() => handleResolve(c.id, 'rework')}>
-                    Order Rework
+                    Rework
                   </button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => handleResolve(c.id, 'dismissed')}>
-                    Dismiss
+                  <button className="btn btn-success btn-sm" onClick={() => handleResolve(c.id, 'resolved')}>
+                    Resolve
                   </button>
                 </div>
               )}
@@ -249,6 +251,7 @@ export default function ManagerDashboard() {
         <Route index element={<Overview />} />
         <Route path="verifications" element={<Verifications />} />
         <Route path="complaints" element={<Complaints />} />
+        <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/manager" replace />} />
       </Routes>
     </DashboardLayout>

@@ -24,7 +24,7 @@ function AppLayout() {
 
   return (
     <>
-      <Navbar />
+      <Navbar isDashboard={isDashboard} />
       <Routes>
         {/* Public */}
         <Route path="/" element={<HomePage />} />

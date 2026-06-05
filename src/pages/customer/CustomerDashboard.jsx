@@ -5,8 +5,10 @@ import {
   MessageCircle, Heart, Clock, CheckCircle, XCircle, Megaphone, ThumbsUp
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
+import LocationPicker from '../../components/LocationPicker';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
+import ProfilePage from '../shared/ProfilePage';
 import './CustomerDashboard.css';
 
 const NAV_ITEMS = [
@@ -27,6 +29,7 @@ const NAV_ITEMS = [
       { name: 'Priyo Workshop', path: '/customer/priyo', icon: <Heart size={18} /> },
     ],
   },
+
 ];
 
 /* ── Overview ── */
@@ -290,23 +293,25 @@ function MyBookings() {
               <button className="btn btn-ghost btn-icon" onClick={() => setReviewTarget(null)}><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmitReview}>
-              <div className="form-group">
-                <label className="form-label">Rating</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button type="button" key={star} onClick={() => setReviewForm(f => ({ ...f, rating: star }))}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                      <Star size={28} fill={star <= reviewForm.rating ? '#fbbf24' : 'none'}
-                        color={star <= reviewForm.rating ? '#fbbf24' : '#cbd5e1'} />
-                    </button>
-                  ))}
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">Rating</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button type="button" key={star} onClick={() => setReviewForm(f => ({ ...f, rating: star }))}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                        <Star size={28} fill={star <= reviewForm.rating ? '#fbbf24' : 'none'}
+                          color={star <= reviewForm.rating ? '#fbbf24' : '#cbd5e1'} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Comment (optional)</label>
-                <textarea className="form-textarea" placeholder="Share your experience..."
-                  value={reviewForm.comment}
-                  onChange={e => setReviewForm(f => ({ ...f, comment: e.target.value }))} rows={3} />
+                <div className="form-group">
+                  <label className="form-label">Comment (optional)</label>
+                  <textarea className="form-textarea" placeholder="Share your experience..."
+                    value={reviewForm.comment}
+                    onChange={e => setReviewForm(f => ({ ...f, comment: e.target.value }))} rows={3} />
+                </div>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-ghost" onClick={() => setReviewTarget(null)}>Skip</button>
@@ -328,17 +333,19 @@ function MyBookings() {
               <button className="btn btn-ghost btn-icon" onClick={() => { setComplaintTarget(null); setComplaintForm({ subject: '', description: '' }); }}><X size={20} /></button>
             </div>
             <form onSubmit={handleFileComplaint}>
-              <div className="form-group">
-                <label className="form-label">Subject *</label>
-                <input className="form-input" placeholder="Brief title of the issue"
-                  value={complaintForm.subject}
-                  onChange={e => setComplaintForm(f => ({ ...f, subject: e.target.value }))} required />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Description *</label>
-                <textarea className="form-textarea" placeholder="Describe the issue in detail..."
-                  value={complaintForm.description}
-                  onChange={e => setComplaintForm(f => ({ ...f, description: e.target.value }))} rows={4} required />
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">Subject *</label>
+                  <input className="form-input" placeholder="Brief title of the issue"
+                    value={complaintForm.subject}
+                    onChange={e => setComplaintForm(f => ({ ...f, subject: e.target.value }))} required />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Description *</label>
+                  <textarea className="form-textarea" placeholder="Describe the issue in detail..."
+                    value={complaintForm.description}
+                    onChange={e => setComplaintForm(f => ({ ...f, description: e.target.value }))} rows={4} required />
+                </div>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-ghost" onClick={() => { setComplaintTarget(null); setComplaintForm({ subject: '', description: '' }); }}>Cancel</button>
@@ -440,15 +447,17 @@ function MyComplaints() {
                 </div>
                 <StatusBadge status={c.status} />
               </div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: 8 }}>
-                {c.description}
-              </p>
-              {c.resolution_note && (
-                <div className="booking-detail" style={{ marginTop: 12 }}>
-                  <span className="bd-label">Resolution</span>
-                  <span className="bd-value">{c.resolution_note}</span>
-                </div>
-              )}
+              <div className="booking-card-body">
+                <p className="bd-value" style={{ fontSize: '0.9rem' }}>
+                  {c.description}
+                </p>
+                {c.resolution_note && (
+                  <div className="booking-detail">
+                    <span className="bd-label">Resolution</span>
+                    <span className="bd-value">{c.resolution_note}</span>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -559,6 +568,8 @@ function BookService() {
   const [address, setAddress] = useState('');
   const [scheduledAt, setScheduledAt] = useState('');
   const [notes, setNotes] = useState('');
+  const [locationLat, setLocationLat] = useState(null);
+  const [locationLng, setLocationLng] = useState(null);
 
   useEffect(() => {
     if (!serviceId) {
@@ -573,6 +584,12 @@ function BookService() {
       .finally(() => setLoading(false));
   }, [serviceId]);
 
+  const handleLocationChange = (lat, lng, addr) => {
+    setLocationLat(lat);
+    setLocationLng(lng);
+    setAddress(addr);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!serviceId || !address || !scheduledAt) {
@@ -584,6 +601,8 @@ function BookService() {
       await api.createBooking({
         service_item_id: Number(serviceId),
         address,
+        latitude: locationLat,
+        longitude: locationLng,
         scheduled_at: new Date(scheduledAt).toISOString(),
         notes: notes || undefined,
       });
@@ -631,17 +650,12 @@ function BookService() {
       )}
 
       <form onSubmit={handleSubmit} className="booking-form card" style={{ padding: 32 }}>
-        <div className="form-group">
-          <label className="form-label">Service Address *</label>
-          <input
-            type="text"
-            className="form-input"
-            placeholder="Enter your full address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            required
-          />
-        </div>
+        <LocationPicker
+          providerLat={service?.provider_latitude}
+          providerLng={service?.provider_longitude}
+          providerArea={service?.provider_area}
+          onLocationChange={handleLocationChange}
+        />
 
         <div className="form-group">
           <label className="form-label">Scheduled Date & Time *</label>
@@ -743,6 +757,12 @@ function BrowseServices() {
                   <span className="bd-label">Price</span>
                   <span className="bd-value">৳{Number(s.base_price).toLocaleString()} / {s.unit}</span>
                 </div>
+                {s.provider_area && (
+                  <div className="booking-detail">
+                    <span className="bd-label">Location</span>
+                    <span className="bd-value">{s.provider_area}</span>
+                  </div>
+                )}
               </div>
               <div className="booking-card-actions">
                 <button
@@ -795,6 +815,7 @@ export default function CustomerDashboard() {
         <Route path="book" element={<BookService />} />
         <Route path="ads" element={<BrowseServices />} />
         <Route path="priyo" element={<PriyoWorkshop />} />
+        <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/customer" replace />} />
       </Routes>
     </DashboardLayout>

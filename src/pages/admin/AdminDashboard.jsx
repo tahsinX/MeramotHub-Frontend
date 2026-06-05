@@ -8,6 +8,7 @@ import {
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
+import ProfilePage from '../shared/ProfilePage';
 import '../customer/CustomerDashboard.css';
 
 const NAV_ITEMS = [
@@ -23,8 +24,10 @@ const NAV_ITEMS = [
     items: [
       { name: 'Complaints', path: '/admin/complaints', icon: <AlertTriangle size={18} /> },
       { name: 'Verifications', path: '/admin/verifications', icon: <Shield size={18} /> },
+      { name: 'Provider Approvals', path: '/admin/provider-approvals', icon: <UserCog size={18} /> },
     ],
   },
+
 ];
 
 function StatusBadge({ status }) {
@@ -207,12 +210,16 @@ function UsersManagement() {
                 </td>
                 <td>{new Date(u.created_at).toLocaleDateString()}</td>
                 <td>
-                  <button
-                    className={`btn btn-sm ${u.is_active ? 'btn-danger' : 'btn-primary'}`}
-                    onClick={() => handleToggle(u)}
-                  >
-                    {u.is_active ? <><XCircle size={14} /> Deactivate</> : <><CheckCircle size={14} /> Activate</>}
-                  </button>
+                  {u.role === 'admin' ? (
+                    <span className="badge badge-neutral">—</span>
+                  ) : (
+                    <button
+                      className={`btn btn-sm ${u.is_active ? 'btn-danger' : 'btn-primary'}`}
+                      onClick={() => handleToggle(u)}
+                    >
+                      {u.is_active ? <><XCircle size={14} /> Deactivate</> : <><CheckCircle size={14} /> Activate</>}
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -349,6 +356,74 @@ function Verifications() {
   );
 }
 
+/* ── Provider Approvals ── */
+function ProviderApprovals() {
+  const [providers, setProviders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadProviders = () => {
+    api.getVerifiedProviders()
+      .then((data) => setProviders(Array.isArray(data) ? data : data?.data || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadProviders(); }, []);
+
+  const handleApprove = async (id) => {
+    try {
+      await api.approveProvider(id);
+      toast.success('Provider approved successfully');
+      loadProviders();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <div>
+      <div className="dash-header">
+        <h1>Provider Approvals</h1>
+        <p>Approve verified service providers to grant full platform access</p>
+      </div>
+
+      {providers.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">✅</div>
+          <h3>All caught up!</h3>
+          <p>No providers waiting for admin approval</p>
+        </div>
+      ) : (
+        <div className="bookings-list">
+          {providers.map((p) => (
+            <div key={p.id} className="booking-card card">
+              <div className="booking-card-header">
+                <div>
+                  <h3>{p.full_name || `Provider #${p.id}`}</h3>
+                  <p className="booking-meta">
+                    NID: {p.nid_number} · Skill: {p.skill_category} · {p.experience_years}y exp · Area: {p.area || 'N/A'}
+                  </p>
+                </div>
+                <span className="badge badge-success">Verified</span>
+              </div>
+              {p.bio && (
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: 8 }}>{p.bio}</p>
+              )}
+              <div className="booking-card-actions">
+                <button className="btn btn-primary btn-sm" onClick={() => handleApprove(p.id)}>
+                  <CheckCircle size={16} /> Approve
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   return (
     <DashboardLayout navItems={NAV_ITEMS} title="Admin">
@@ -357,6 +432,8 @@ export default function AdminDashboard() {
         <Route path="users" element={<UsersManagement />} />
         <Route path="complaints" element={<ComplaintsManagement />} />
         <Route path="verifications" element={<Verifications />} />
+        <Route path="provider-approvals" element={<ProviderApprovals />} />
+        <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </DashboardLayout>
