@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  Menu, X, Wrench, LogOut, User, LayoutDashboard,
+  Menu, X, LogOut, User, LayoutDashboard,
   ChevronDown, Zap
 } from 'lucide-react';
+import logo from '../../assets/Meramot hub icon.png';
 import './Navbar.css';
 
 export default function Navbar({ isDashboard }) {
@@ -67,12 +68,7 @@ export default function Navbar({ isDashboard }) {
       <div className="navbar-inner container">
         {/* Logo */}
         <Link to="/" className="navbar-logo" id="navbar-logo">
-          <div className="logo-icon">
-            <Wrench size={22} />
-          </div>
-          <span className="logo-text">
-            Meramot<span className="logo-accent">Hub</span>
-          </span>
+          <img src={logo} alt="MeramotHub" className="navbar-logo-img" />
         </Link>
 
         {/* Desktop Nav */}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Wrench, ShieldCheck, Mail, PhoneCall } from 'lucide-react';
+import { ShieldCheck, Mail, PhoneCall } from 'lucide-react';
+import logo from '../../assets/Meramot hub icon.png';
 import './Footer.css';
 
 export default function Footer() {
@@ -11,13 +12,7 @@ export default function Footer() {
           {/* Left: Brand & Tagline */}
           <div className="footer-brand-column">
             <Link to="/" className="footer-logo-brand">
-              <div className="footer-logo-box">
-                <Wrench size={16} />
-              </div>
-              <span className="footer-logo-text">
-                <span className="logo-meramot">Meramot</span>
-                <span className="logo-hub">Hub</span>
-              </span>
+              <img src={logo} alt="MeramotHub" className="footer-logo-img" />
             </Link>
             <p className="footer-brand-description">
               Bangladesh's premium local home service marketplace. Booking verified electricians, plumbers, and mechanics with full escrow payment protection.

@@ -33,16 +33,10 @@
   letter-spacing: -0.02em;
 }
 
-.logo-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-blue);
-  transition: transform 0.3s ease;
-}
-
-.navbar-logo:hover .logo-icon {
-  transform: rotate(45deg);
+.navbar-logo-img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
 }
 
 .logo-text-meramot {

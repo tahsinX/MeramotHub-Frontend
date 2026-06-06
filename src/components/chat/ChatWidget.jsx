@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Menu, X, Send, MessageCircle } from 'lucide-react';
+import { X, Send, MessageCircle } from 'lucide-react';
 import api from '../../api/client';
+import chatbotLogo from '../../assets/Ai chatbot logo.png';
 import './ChatWidget.css';
 
 export default function ChatWidget() {
@@ -37,7 +38,7 @@ export default function ChatWidget() {
   return (
     <>
       <button className="chat-trigger" onClick={() => setOpen(true)} aria-label="Open chatbot">
-        <Menu size={24} />
+        <img src={chatbotLogo} alt="AI Chatbot" className="chat-trigger-icon" />
       </button>
 
       {open && (
