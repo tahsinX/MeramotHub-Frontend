@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import LocationPicker from '../../components/LocationPicker';
+import ChatWidget from '../../components/chat/ChatWidget';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 import ProfilePage from '../shared/ProfilePage';
@@ -805,19 +806,22 @@ function StatusBadge({ status }) {
 /* ── Main Dashboard ── */
 export default function CustomerDashboard() {
   return (
-    <DashboardLayout navItems={NAV_ITEMS} title="Customer">
-      <Routes>
-        <Route index element={<Overview />} />
-        <Route path="bookings" element={<MyBookings />} />
-        <Route path="reviews" element={<MyReviews />} />
-        <Route path="complaints" element={<MyComplaints />} />
-        <Route path="chat" element={<ChatBot />} />
-        <Route path="book" element={<BookService />} />
-        <Route path="ads" element={<BrowseServices />} />
-        <Route path="priyo" element={<PriyoWorkshop />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="*" element={<Navigate to="/customer" replace />} />
-      </Routes>
-    </DashboardLayout>
+    <>
+      <DashboardLayout navItems={NAV_ITEMS} title="Customer">
+        <Routes>
+          <Route index element={<Overview />} />
+          <Route path="bookings" element={<MyBookings />} />
+          <Route path="reviews" element={<MyReviews />} />
+          <Route path="complaints" element={<MyComplaints />} />
+          <Route path="chat" element={<ChatBot />} />
+          <Route path="book" element={<BookService />} />
+          <Route path="ads" element={<BrowseServices />} />
+          <Route path="priyo" element={<PriyoWorkshop />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="*" element={<Navigate to="/customer" replace />} />
+        </Routes>
+      </DashboardLayout>
+      <ChatWidget />
+    </>
   );
 }
