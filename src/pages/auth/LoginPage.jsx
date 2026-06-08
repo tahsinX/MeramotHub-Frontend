@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Eye, EyeOff, Wrench, Zap } from 'lucide-react';
+import { Eye, EyeOff, Zap } from 'lucide-react';
+import logo from '../../assets/Meramot hub icon.png';
 import toast from 'react-hot-toast';
 import './Auth.css';
 
@@ -33,7 +34,7 @@ export default function LoginPage() {
         <div className="auth-visual">
           <div className="auth-visual-content">
             <div className="auth-visual-icon">
-              <Wrench size={48} />
+              <img src={logo} alt="MeramotHub" className="auth-logo-img" />
             </div>
             <h2>Welcome Back to<br /><span>MeramotHub</span></h2>
             <p>Your trusted home service partner. Sign in to manage bookings, track services, and more.</p>

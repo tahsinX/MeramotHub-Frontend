@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Eye, EyeOff, Wrench, Zap, User, Briefcase } from 'lucide-react';
+import { Eye, EyeOff, Zap, User, Briefcase } from 'lucide-react';
+import logo from '../../assets/Meramot hub icon.png';
 import toast from 'react-hot-toast';
 import './Auth.css';
 
@@ -40,7 +41,7 @@ export default function RegisterPage() {
         <div className="auth-visual register-visual">
           <div className="auth-visual-content">
             <div className="auth-visual-icon">
-              <Wrench size={48} />
+              <img src={logo} alt="MeramotHub" className="auth-logo-img" />
             </div>
             <h2>Join<br /><span>MeramotHub</span></h2>
             <p>Create your account and connect with verified service professionals across Bangladesh.</p>
