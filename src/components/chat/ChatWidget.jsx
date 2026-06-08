@@ -6,6 +6,8 @@ import './ChatWidget.css';
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
+  const [attention, setAttention] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'bot', text: "Hello! I'm your MeramotHub assistant. Describe your problem and I'll help you find the right service provider." },
   ]);
@@ -14,8 +16,24 @@ export default function ChatWidget() {
   const endRef = useRef(null);
 
   useEffect(() => {
-    if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (open) {
+      endRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setShowTooltip(false);
+    }
   }, [messages, open]);
+
+  // Periodic attention seeker
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!open) {
+        setAttention(true);
+        setTimeout(() => setAttention(false), 1000);
+        setShowTooltip(true);
+        setTimeout(() => setShowTooltip(false), 5000);
+      }
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [open]);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -37,9 +55,23 @@ export default function ChatWidget() {
 
   return (
     <>
-      <button className="chat-trigger" onClick={() => setOpen(true)} aria-label="Open chatbot">
-        <img src={chatbotLogo} alt="AI Chatbot" className="chat-trigger-icon" />
-      </button>
+      {!open && (
+        <div className="chat-trigger-wrapper">
+          {showTooltip && (
+            <div className="chat-tooltip">
+              Need help? Ask me!
+            </div>
+          )}
+          <button 
+            className={`chat-trigger ${attention ? 'attention' : ''}`} 
+            onClick={() => setOpen(true)} 
+            aria-label="Open chatbot"
+          >
+            <div className="chat-status-indicator" />
+            <img src={chatbotLogo} alt="AI Chatbot" className="chat-trigger-icon" />
+          </button>
+        </div>
+      )}
 
       {open && (
         <div className="chat-overlay" onClick={() => setOpen(false)}>
