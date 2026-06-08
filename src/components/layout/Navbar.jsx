@@ -151,7 +151,11 @@ export default function Navbar({ isDashboard }) {
           {/* Mobile toggle */}
           <button
             className="mobile-toggle"
-            onClick={() => setMobileOpen(!mobileOpen)}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMobileOpen(!mobileOpen);
+            }}
             id="mobile-menu-toggle"
           >
             {mobileOpen ? <X size={24} /> : <Menu size={24} />}
@@ -161,29 +165,54 @@ export default function Navbar({ isDashboard }) {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="mobile-menu" id="mobile-menu">
-          {!isDashboard && (
-            <>
-              <Link to="/" className="mobile-link">Home</Link>
-              <Link to="/services" className="mobile-link">Services</Link>
-              <Link to="/about" className="mobile-link">About</Link>
-            </>
-          )}
-          {isAuthenticated ? (
-            <>
-              <Link to={getDashboardPath()} className="mobile-link">Dashboard</Link>
-              <Link to={getProfilePath()} className="mobile-link">Profile</Link>
-              <button className="mobile-link danger" onClick={handleLogout}>Sign Out</button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="mobile-link">Sign In</Link>
-              <Link to="/register" className="btn btn-primary" style={{ margin: '8px 24px' }}>
-                Get Started
-              </Link>
-            </>
-          )}
-        </div>
+        <>
+          <div className="mobile-menu-overlay" onClick={() => setMobileOpen(false)} />
+          <div className="mobile-menu" id="mobile-menu">
+            {!isDashboard && (
+              <div style={{ marginBottom: '32px' }}>
+                <div className="mobile-menu-section-label">Navigation</div>
+                <div className="mobile-menu-section">
+                  <Link to="/" className={`mobile-link ${location.pathname === '/' ? 'active' : ''}`}>
+                    Home <User size={18} />
+                  </Link>
+                  <Link to="/services" className={`mobile-link ${location.pathname.startsWith('/services') ? 'active' : ''}`}>
+                    Services <Zap size={18} />
+                  </Link>
+                  <Link to="/about" className={`mobile-link ${location.pathname === '/about' ? 'active' : ''}`}>
+                    About <LayoutDashboard size={18} />
+                  </Link>
+                </div>
+              </div>
+            )}
+            <div>
+              <div className="mobile-menu-section-label">Account</div>
+              <div className="mobile-menu-section">
+                {isAuthenticated ? (
+                  <>
+                    <Link to={getDashboardPath()} className="mobile-link">
+                      Dashboard <LayoutDashboard size={18} />
+                    </Link>
+                    <Link to={getProfilePath()} className="mobile-link">
+                      Profile <User size={18} />
+                    </Link>
+                    <button className="mobile-link danger" onClick={handleLogout}>
+                      Sign Out <LogOut size={18} />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" className="mobile-link">
+                      Sign In <User size={18} />
+                    </Link>
+                    <Link to="/register" className="btn btn-primary" style={{ margin: '16px 0', height: '48px', justifyContent: 'center', borderRadius: '12px' }}>
+                      <Zap size={16} /> Get Started
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </nav>
   );
