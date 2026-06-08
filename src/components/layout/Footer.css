@@ -38,21 +38,10 @@
   letter-spacing: -0.02em;
 }
 
-.footer-logo-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-blue);
-}
-
-.footer-logo-text .logo-meramot {
-  color: var(--color-navy);
-  font-weight: 800;
-}
-
-.footer-logo-text .logo-hub {
-  color: var(--color-blue);
-  font-weight: 800;
+.footer-logo-img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
 }
 
 .footer-brand-description {
