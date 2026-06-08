@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  Menu, X, Wrench, LogOut, User, LayoutDashboard,
+  Wrench, LogOut, User, LayoutDashboard,
   ChevronDown, Zap
 } from 'lucide-react';
 import './Navbar.css';
 
 export default function Navbar({ isDashboard }) {
   const { user, isAuthenticated, logout } = useAuth();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const location = useLocation();
@@ -22,7 +21,6 @@ export default function Navbar({ isDashboard }) {
   }, []);
 
   useEffect(() => {
-    setMobileOpen(false);
     setProfileOpen(false);
   }, [location]);
 
@@ -151,44 +149,8 @@ export default function Navbar({ isDashboard }) {
               </Link>
             </>
           )}
-
-          {/* Mobile toggle */}
-          <button
-            className="mobile-toggle"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            id="mobile-menu-toggle"
-          >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
       </div>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="mobile-menu" id="mobile-menu">
-          {!isDashboard && (
-            <>
-              <Link to="/" className="mobile-link">Home</Link>
-              <Link to="/services" className="mobile-link">Services</Link>
-              <Link to="/about" className="mobile-link">About</Link>
-            </>
-          )}
-          {isAuthenticated ? (
-            <>
-              <Link to={getDashboardPath()} className="mobile-link">Dashboard</Link>
-              <Link to={getProfilePath()} className="mobile-link">Profile</Link>
-              <button className="mobile-link danger" onClick={handleLogout}>Sign Out</button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="mobile-link">Sign In</Link>
-              <Link to="/register" className="btn btn-primary" style={{ margin: '8px 24px' }}>
-                Get Started
-              </Link>
-            </>
-          )}
-        </div>
-      )}
     </nav>
   );
 }

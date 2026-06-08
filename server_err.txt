@@ -1,0 +1,6 @@
+INFO:     Will watch for changes in these directories: ['D:\\D\\Spring 2026\\Soft Lab\\MeramotHub']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [17348] using StatReload
+INFO:     Started server process [6708]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

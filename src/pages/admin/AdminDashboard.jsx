@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, DollarSign, AlertTriangle,
   Shield, CheckCircle, XCircle, UserCog, BarChart3,
-  TrendingUp, Activity
+  TrendingUp, Activity, UserPlus, MapPin, Phone, Mail, Eye, EyeOff
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import api from '../../api/client';
@@ -25,6 +25,12 @@ const NAV_ITEMS = [
       { name: 'Complaints', path: '/admin/complaints', icon: <AlertTriangle size={18} /> },
       { name: 'Verifications', path: '/admin/verifications', icon: <Shield size={18} /> },
       { name: 'Provider Approvals', path: '/admin/provider-approvals', icon: <UserCog size={18} /> },
+    ],
+  },
+  {
+    label: 'Management',
+    items: [
+      { name: 'Add Area Manager', path: '/admin/add-area-manager', icon: <UserPlus size={18} /> },
     ],
   },
 
@@ -424,6 +430,129 @@ function ProviderApprovals() {
   );
 }
 
+/* ── Add Area Manager ── */
+function AddAreaManager() {
+  const [form, setForm] = useState({
+    full_name: '',
+    phone_number: '',
+    email: '',
+    password: '',
+    area: '',
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await api.createAreaManager(form);
+      toast.success('Area manager created successfully');
+      setForm({ full_name: '', phone_number: '', email: '', password: '', area: '' });
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="dash-header">
+        <h1>Add Area Manager</h1>
+        <p>Create a new area manager account</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="card" style={{ maxWidth: 560, padding: 'var(--space-xl)' }}>
+        <div className="form-group">
+          <label className="form-label">Full Name</label>
+          <input
+            className="form-input"
+            name="full_name"
+            value={form.full_name}
+            onChange={handleChange}
+            placeholder="Enter full name"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Phone Number</label>
+          <div className="input-with-icon">
+            <Phone size={16} />
+            <input
+              className="form-input"
+              name="phone_number"
+              value={form.phone_number}
+              onChange={handleChange}
+              placeholder="e.g. 017XXXXXXXX"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Email</label>
+          <div className="input-with-icon">
+            <Mail size={16} />
+            <input
+              className="form-input"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="email@example.com"
+            />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Password</label>
+          <div className="input-with-icon">
+            <input
+              className="form-input"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              value={form.password}
+              onChange={handleChange}
+              placeholder="Enter password"
+              required
+            />
+            <button type="button" className="btn-icon" onClick={() => setShowPassword(!showPassword)} style={{ background: 'none', border: 'none', padding: '0 8px', cursor: 'pointer' }}>
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Assigned Area</label>
+          <div className="input-with-icon">
+            <MapPin size={16} />
+            <input
+              className="form-input"
+              name="area"
+              value={form.area}
+              onChange={handleChange}
+              placeholder="e.g. Dhaka, Mirpur"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="form-actions" style={{ marginTop: 'var(--space-lg)' }}>
+          <button type="submit" className="btn btn-primary" disabled={submitting}>
+            {submitting ? 'Creating...' : <><UserPlus size={16} /> Create Area Manager</>}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   return (
     <DashboardLayout navItems={NAV_ITEMS} title="Admin">
@@ -433,6 +562,7 @@ export default function AdminDashboard() {
         <Route path="complaints" element={<ComplaintsManagement />} />
         <Route path="verifications" element={<Verifications />} />
         <Route path="provider-approvals" element={<ProviderApprovals />} />
+        <Route path="add-area-manager" element={<AddAreaManager />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>

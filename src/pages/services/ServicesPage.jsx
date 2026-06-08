@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { Search, Filter, ChevronRight, Wrench, Tag } from 'lucide-react';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { Search, Filter, ChevronRight, Wrench, Tag, MessageCircle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../api/client';
 import './ServicesPage.css';
 
@@ -42,6 +43,8 @@ const STATIC_SERVICES = [
 
 export default function ServicesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { isCustomer } = useAuth();
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -248,14 +251,26 @@ export default function ServicesPage() {
                         </div>
                       </div>
                       <h3 className="service-item-name">{item.name}</h3>
+                      {item.provider_name && (
+                        <div className="service-item-provider">
+                          by <strong>{item.provider_name}</strong>
+                        </div>
+                      )}
                       <div className="service-item-price-row">
                         <span className="symbol">৳</span>
                         <span className="val">{Number(item.base_price).toLocaleString()}</span>
                         <span className="unit">/ {item.unit}</span>
                       </div>
-                      <Link to={`/customer/book?service=${item.id}`} className="btn btn-primary btn-sm service-item-book-btn">
-                        Book Now <ChevronRight size={14} />
-                      </Link>
+                      <div className="service-item-actions">
+                        <Link to={`/customer/book?service=${item.id}`} className="btn btn-primary btn-sm service-item-book-btn">
+                          Book Now <ChevronRight size={14} />
+                        </Link>
+                        {item.provider_id && isCustomer && (
+                          <button className="btn btn-ghost btn-sm" onClick={() => navigate(`/customer/messages/${item.provider_id}`)}>
+                            <MessageCircle size={14} /> Chat
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

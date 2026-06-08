@@ -107,71 +107,7 @@
   color: var(--color-text-primary);
 }
 
-/* Hamburger toggle for mobile */
-.mobile-hamburger {
-  display: none;
-  width: 40px;
-  height: 40px;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-primary);
-  border-radius: var(--radius-md);
-}
 
-.mobile-hamburger:hover {
-  background-color: var(--color-bg);
-}
-
-/* Mobile Dropdown Panel */
-.mobile-dropdown-panel {
-  display: none;
-  position: absolute;
-  top: var(--nav-height);
-  left: 0;
-  right: 0;
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  box-shadow: 0 10px 15px -3px var(--color-shadow);
-  padding: 24px;
-  z-index: 95;
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.mobile-links-col {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.mobile-nav-link {
-  font-family: var(--font-heading);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-}
-
-.mobile-nav-link:hover,
-.mobile-nav-link.active {
-  color: var(--color-text-primary);
-}
-
-.mobile-actions-col {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
 
 /* Profile menu */
 .profile-menu {
@@ -315,19 +251,6 @@
 @media (max-width: 768px) {
   .navbar-links {
     display: none;
-  }
-
-  .mobile-hamburger {
-    display: flex;
-  }
-
-  .mobile-dropdown-panel {
-    display: none;
-  }
-
-  .mobile-dropdown-panel.open {
-    display: flex;
-    flex-direction: column;
   }
 
   .profile-info {

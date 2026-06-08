@@ -9,6 +9,7 @@ import LocationPicker from '../../components/LocationPicker';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 import ProfilePage from '../shared/ProfilePage';
+import ChatPage from '../shared/ChatPage';
 import './CustomerDashboard.css';
 
 const NAV_ITEMS = [
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   {
     label: 'Support',
     items: [
+      { name: 'Messages', path: '/customer/messages', icon: <MessageCircle size={18} /> },
       { name: 'My Complaints', path: '/customer/complaints', icon: <AlertTriangle size={18} /> },
       { name: 'Browse Services', path: '/customer/ads', icon: <Megaphone size={18} /> },
       { name: 'AI Chatbot', path: '/customer/chat', icon: <MessageCircle size={18} /> },
@@ -259,8 +261,22 @@ function MyBookings() {
                     <span className="bd-value">{b.notes}</span>
                   </div>
                 )}
+                {b.provider_name && (
+                  <div className="booking-detail">
+                    <span className="bd-label">Provider</span>
+                    <span className="bd-value">{b.provider_name}</span>
+                  </div>
+                )}
               </div>
               <div className="booking-card-actions">
+                {b.provider_id && ['accepted', 'assigned', 'started', 'pending_completion'].includes(b.status) && (
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => navigate(`/customer/messages/${b.provider_id}`)}
+                  >
+                    <MessageCircle size={16} /> Chat
+                  </button>
+                )}
                 {b.status === 'pending' && (
                   <button className="btn btn-danger btn-sm"
                     onClick={() => api.cancelBooking(b.id).then(() => { toast.success('Cancelled'); window.location.reload(); })}
@@ -642,7 +658,22 @@ function BookService() {
 
       {service && (
         <div className="card" style={{ padding: 24, marginBottom: 32 }}>
-          <h3 style={{ marginBottom: 8 }}>{service.name}</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+            <h3>{service.name}</h3>
+            {service.provider_id && (
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => navigate(`/customer/messages/${service.provider_id}`)}
+              >
+                <MessageCircle size={16} /> Chat
+              </button>
+            )}
+          </div>
+          {service.provider_name && (
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: 4 }}>
+              Provider: {service.provider_name}
+            </p>
+          )}
           <p style={{ color: 'var(--color-text-secondary)' }}>
             Price: ৳{Number(service.base_price).toLocaleString()} / {service.unit}
           </p>
@@ -763,6 +794,12 @@ function BrowseServices() {
                     <span className="bd-value">{s.provider_area}</span>
                   </div>
                 )}
+                {s.provider_name && (
+                  <div className="booking-detail">
+                    <span className="bd-label">Provider</span>
+                    <span className="bd-value">{s.provider_name}</span>
+                  </div>
+                )}
               </div>
               <div className="booking-card-actions">
                 <button
@@ -771,6 +808,14 @@ function BrowseServices() {
                 >
                   Book Now
                 </button>
+                {s.provider_id && (
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => navigate(`/customer/messages/${s.provider_id}`)}
+                  >
+                    <MessageCircle size={16} /> Chat
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -814,6 +859,8 @@ export default function CustomerDashboard() {
         <Route path="chat" element={<ChatBot />} />
         <Route path="book" element={<BookService />} />
         <Route path="ads" element={<BrowseServices />} />
+        <Route path="messages" element={<ChatPage />} />
+        <Route path="messages/:userId" element={<ChatPage />} />
         <Route path="priyo" element={<PriyoWorkshop />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/customer" replace />} />
