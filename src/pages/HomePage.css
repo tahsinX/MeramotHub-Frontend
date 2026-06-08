@@ -859,7 +859,8 @@ html[data-theme="dark"] .cta-panel-dark {
   display: none;
   position: fixed;
   bottom: 24px;
-  right: 24px;
+  left: 50%;
+  transform: translateX(-50%);
   background-color: var(--color-gold);
   color: #000000;
   font-family: var(--font-heading);

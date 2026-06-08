@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   Menu, X, LogOut, User, LayoutDashboard,
-  ChevronDown, Zap
+  ChevronDown, Zap, Sun, Moon
 } from 'lucide-react';
 import logo from '../../assets/Meramot hub icon.png';
 import './Navbar.css';
@@ -15,6 +15,17 @@ export default function Navbar({ isDashboard }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -88,6 +99,15 @@ export default function Navbar({ isDashboard }) {
 
         {/* Right side */}
         <div className="navbar-actions">
+          <button 
+            className="theme-toggle-btn" 
+            onClick={toggleTheme} 
+            aria-label="Toggle theme"
+            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
+
           {isAuthenticated ? (
             <div className="profile-menu">
               <button

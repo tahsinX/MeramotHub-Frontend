@@ -137,9 +137,9 @@
   display: none;
   position: fixed;
   bottom: 24px;
-  right: 24px;
+  left: 24px;
   z-index: 60;
-  background: #0A0F1D;
+  background: var(--color-blue);
   color: white;
   border: none;
   width: 56px;
@@ -147,7 +147,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
   cursor: pointer;
 }
 
