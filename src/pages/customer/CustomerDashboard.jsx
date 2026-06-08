@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import LocationPicker from '../../components/LocationPicker';
-import ChatWidget from '../../components/chat/ChatWidget';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 import ProfilePage from '../shared/ProfilePage';
@@ -821,7 +820,6 @@ export default function CustomerDashboard() {
           <Route path="*" element={<Navigate to="/customer" replace />} />
         </Routes>
       </DashboardLayout>
-      <ChatWidget />
     </>
   );
 }
