@@ -132,7 +132,7 @@ function CountUp({ end, duration = 1200, suffix = "" }) {
 
 export default function HomePage() {
   const [categories, setCategories] = useState([]);
-  const { user, isManager } = useAuth();
+  const { user, isManager, isProvider } = useAuth();
 
   useEffect(() => {
     api.getCategories()
@@ -175,7 +175,7 @@ export default function HomePage() {
               <div className="trusted-badge-pill animate-fade-in">
                 <span className="pill-dot">⚡</span>
                 <span className="pill-text">
-                  {isManager ? 'Management Access' : 'Trusted by 10,000+ Customers'}
+                  {isManager ? 'Management Access' : isProvider ? 'Professional Network' : 'Trusted by 10,000+ Customers'}
                 </span>
               </div>
               
@@ -203,6 +203,34 @@ export default function HomePage() {
                       <Link to="/manager" className="manager-mini-link">
                         <ClipboardList size={14} /> 
                         Unresolved Complaints
+                      </Link>
+                    </div>
+                  </div>
+                </>
+              ) : isProvider ? (
+                <>
+                  <h1 className="hero-headline">
+                    Grow Your Business.<br />
+                    Showcase Expertise.
+                  </h1>
+                  <p className="hero-subtext">
+                    Join thousands of vetted professionals. Access a steady stream of local service requests, 
+                    secure escrow-protected payments, and build your digital reputation.
+                  </p>
+                  
+                  <div className="hero-actions">
+                    <Link to="/provider" className="btn btn-primary btn-lg">
+                      Enter Provider Portal
+                      <ArrowRight size={16} />
+                    </Link>
+                    <div className="manager-quick-links">
+                      <Link to="/provider/profile" className="manager-mini-link">
+                        <UserCheck size={14} /> 
+                        Complete Verification
+                      </Link>
+                      <Link to="/provider" className="manager-mini-link">
+                        <Star size={14} /> 
+                        View Your Ratings
                       </Link>
                     </div>
                   </div>
@@ -256,6 +284,13 @@ export default function HomePage() {
                 <div className="manager-hero-overlay-text animate-fade-in">
                   <ShieldCheck size={20} />
                   <span>Administrative Control Panel</span>
+                </div>
+              )}
+
+              {isProvider && (
+                <div className="manager-hero-overlay-text animate-fade-in" style={{ borderColor: 'rgba(34, 197, 94, 0.3)', color: '#22c55e' }}>
+                  <Star size={20} />
+                  <span>Verified Professional Portal</span>
                 </div>
               )}
 
@@ -373,6 +408,41 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* ═══ PROVIDER GROWTH HUB ═══ */}
+      {isProvider && (
+        <section className="section manager-ops-hub reveal">
+          <div className="container">
+            <div className="section-header-block">
+              <h2 className="section-headline">Provider Excellence.</h2>
+              <p className="section-desc">Tools to help you dominate your local market and maximize earnings.</p>
+            </div>
+            
+            <div className="manager-dashboard-preview">
+              <div className="preview-card">
+                <CreditCard size={32} className="preview-icon" style={{ color: '#22c55e' }} />
+                <h3>Earnings Hub</h3>
+                <p>Track your locked escrow funds, completed payments, and upcoming payouts with full transparency.</p>
+                <Link to="/provider" className="preview-btn">Check Wallet</Link>
+              </div>
+              
+              <div className="preview-card highlight" style={{ borderColor: '#22c55e' }}>
+                <Zap size={32} className="preview-icon" style={{ color: '#22c55e' }} />
+                <h3>Active Requests</h3>
+                <p>View and accept nearby service requests instantly. Fill your schedule with high-quality leads.</p>
+                <Link to="/provider" className="preview-btn">View Jobs</Link>
+              </div>
+
+              <div className="preview-card">
+                <Star size={32} className="preview-icon" style={{ color: '#22c55e' }} />
+                <h3>Profile Rating</h3>
+                <p>Build your reputation. Collect verified reviews to rank higher in customer searches.</p>
+                <Link to="/provider/profile" className="preview-btn">Edit Profile</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ═══ STATS BAR ═══ */}
       <section className="stats-bar-section" id="stats">
         <div className="container">
@@ -398,51 +468,53 @@ export default function HomePage() {
       </section>
 
       {/* ═══ SERVICES SECTION (ASYMMETRIC GRID) ═══ */}
-      <section className="section services-grid-section" id="services">
-        <div className="container">
-          <div className="section-header-block reveal">
-            <h2 className="section-headline">Services on demand.</h2>
-            <p className="section-desc">Select an area of expertise to locate top nearby providers.</p>
-          </div>
+      {!isProvider && (
+        <section className="section services-grid-section" id="services">
+          <div className="container">
+            <div className="section-header-block reveal">
+              <h2 className="section-headline">Services on demand.</h2>
+              <p className="section-desc">Select an area of expertise to locate top nearby providers.</p>
+            </div>
 
-          <div className="services-asymmetric-grid reveal">
-            {displayCategories.slice(0, 5).map((cat, idx) => {
-              const bgColors = [
-                'service-bg-electrician',
-                'service-bg-plumber',
-                'service-bg-ac',
-                'service-bg-carpenter',
-                'service-bg-painting'
-              ];
-              const currentBg = bgColors[idx] || 'service-bg-default';
-              
-              return (
-                <Link 
-                  to={cat.id ? `/services?category=${cat.id}` : '/services'} 
-                  key={cat.id || idx} 
-                  className={`service-grid-card ${currentBg}`}
-                >
-                  <div className="service-card-top">
-                    <span className="service-num">0{idx + 1}</span>
-                    <Wrench size={16} className="service-card-icon" />
-                  </div>
-                  <div className="service-card-bottom">
-                    <h3 className="service-card-name">{cat.name}</h3>
-                    <p className="service-card-desc">{cat.description || cat.desc}</p>
-                    <div className="service-card-link">
-                      <span>Book Service</span>
-                      <ArrowRight size={14} />
+            <div className="services-asymmetric-grid reveal">
+              {displayCategories.slice(0, 5).map((cat, idx) => {
+                const bgColors = [
+                  'service-bg-electrician',
+                  'service-bg-plumber',
+                  'service-bg-ac',
+                  'service-bg-carpenter',
+                  'service-bg-painting'
+                ];
+                const currentBg = bgColors[idx] || 'service-bg-default';
+                
+                return (
+                  <Link 
+                    to={cat.id ? `/services?category=${cat.id}` : '/services'} 
+                    key={cat.id || idx} 
+                    className={`service-grid-card ${currentBg}`}
+                  >
+                    <div className="service-card-top">
+                      <span className="service-num">0{idx + 1}</span>
+                      <Wrench size={16} className="service-card-icon" />
                     </div>
-                  </div>
-                </Link>
-              );
-            })}
+                    <div className="service-card-bottom">
+                      <h3 className="service-card-name">{cat.name}</h3>
+                      <p className="service-card-desc">{cat.description || cat.desc}</p>
+                      <div className="service-card-link">
+                        <span>Book Service</span>
+                        <ArrowRight size={14} />
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ═══ PROCESS SECTION (WATERLINE NUMBERS) ═══ */}
-      {!isManager && (
+      {!isManager && !isProvider && (
         <section className="section process-section-light" id="process">
           <div className="container">
             <div className="section-header-block reveal">
@@ -523,17 +595,25 @@ export default function HomePage() {
             <h2 className="cta-panel-title">
               {isManager 
                 ? "Oversee your area and maintain service quality." 
+                : isProvider
+                ? "Manage your business and track your earnings."
                 : "Ready to hire verified local technicians with escrow security?"}
             </h2>
             <p className="cta-panel-subtitle">
               {isManager 
                 ? "Access advanced tools for verification and complaint resolution." 
+                : isProvider
+                ? "Access your dashboard to check for new service requests."
                 : "Creating an account takes less than a minute. Secure your bookings today."}
             </p>
             <div className="cta-panel-actions">
               {isManager ? (
                 <Link to="/manager" className="btn btn-primary btn-lg">
                   <LayoutDashboard size={16} /> Enter Manager Dashboard
+                </Link>
+              ) : isProvider ? (
+                <Link to="/provider" className="btn btn-primary btn-lg" style={{ backgroundColor: '#22c55e', borderColor: '#22c55e' }}>
+                  <LayoutDashboard size={16} /> Go to Provider Portal
                 </Link>
               ) : (
                 <>
@@ -551,7 +631,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══ MOBILE FLOATING CTA ═══ */}
-      {!isManager && (
+      {!isManager && !isProvider && (
         <Link to="/services" className="mobile-floating-booking-btn" id="mobile-floating-booking-btn">
           <Zap size={14} fill="currentColor" /> Book Now
         </Link>
