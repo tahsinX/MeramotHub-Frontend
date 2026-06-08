@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Zap, Shield, UserCheck, CreditCard, Clock, Star, AlertCircle, Wrench } from 'lucide-react';
+import { ArrowRight, Zap, Shield, UserCheck, CreditCard, Clock, Star, AlertCircle, Wrench, LayoutDashboard, ShieldCheck, ClipboardList } from 'lucide-react';
 import api from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import './HomePage.css';
 
 const STATIC_CATEGORIES = [
@@ -131,6 +132,7 @@ function CountUp({ end, duration = 1200, suffix = "" }) {
 
 export default function HomePage() {
   const [categories, setCategories] = useState([]);
+  const { user, isManager } = useAuth();
 
   useEffect(() => {
     api.getCategories()
@@ -172,26 +174,61 @@ export default function HomePage() {
             <div className="hero-left reveal">
               <div className="trusted-badge-pill animate-fade-in">
                 <span className="pill-dot">⚡</span>
-                <span className="pill-text">Trusted by 10,000+ Customers</span>
+                <span className="pill-text">
+                  {isManager ? 'Management Access' : 'Trusted by 10,000+ Customers'}
+                </span>
               </div>
-              <h1 className="hero-headline">
-                Verified professionals.<br />
-                Escrow protected.
-              </h1>
-              <p className="hero-subtext">
-                Book NID-verified electricians, plumbers, and local technicians with full financial safety.
-                Transparent pricing, zero negotiations, and reliable service guaranteed.
-              </p>
               
-              <div className="hero-actions">
-                <Link to="/services" className="btn btn-primary btn-lg" id="hero-cta-book">
-                  Book A Service Now
-                  <ArrowRight size={16} />
-                </Link>
-                <Link to="/register" className="btn btn-outline btn-lg" id="hero-cta-join">
-                  Join as Service Provider
-                </Link>
-              </div>
+              {isManager ? (
+                <>
+                  <h1 className="hero-headline">
+                    Streamline Operations.<br />
+                    Enforce Excellence.
+                  </h1>
+                  <p className="hero-subtext">
+                    As an Area Manager, you are the backbone of MeramotHub. 
+                    Verify local experts, resolve disputes, and maintain the highest standards of quality in your assigned region.
+                  </p>
+                  
+                  <div className="hero-actions">
+                    <Link to="/manager" className="btn btn-primary btn-lg">
+                      Go to Dashboard
+                      <LayoutDashboard size={18} style={{ marginLeft: '8px' }} />
+                    </Link>
+                    <div className="manager-quick-links">
+                      <Link to="/manager" className="manager-mini-link">
+                        <ShieldCheck size={14} /> 
+                        Pending Verifications
+                      </Link>
+                      <Link to="/manager" className="manager-mini-link">
+                        <ClipboardList size={14} /> 
+                        Unresolved Complaints
+                      </Link>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h1 className="hero-headline">
+                    Verified professionals.<br />
+                    Escrow protected.
+                  </h1>
+                  <p className="hero-subtext">
+                    Book NID-verified electricians, plumbers, and local technicians with full financial safety.
+                    Transparent pricing, zero negotiations, and reliable service guaranteed.
+                  </p>
+                  
+                  <div className="hero-actions">
+                    <Link to="/services" className="btn btn-primary btn-lg" id="hero-cta-book">
+                      Book A Service Now
+                      <ArrowRight size={16} />
+                    </Link>
+                    <Link to="/register" className="btn btn-outline btn-lg" id="hero-cta-join">
+                      Join as Service Provider
+                    </Link>
+                  </div>
+                </>
+              )}
 
               <div className="hero-trust-indicators">
                 <div className="trust-indicator-item">
@@ -214,6 +251,14 @@ export default function HomePage() {
             {/* Right Collage */}
             <div className="hero-right reveal">
               <div className="collage-background-mesh" />
+              
+              {isManager && (
+                <div className="manager-hero-overlay-text animate-fade-in">
+                  <ShieldCheck size={20} />
+                  <span>Administrative Control Panel</span>
+                </div>
+              )}
+
               <div className="floating-collage-container">
                 {/* Card 1: Electrician */}
                 <div className="floating-card card-electrician animate-float-slow">
@@ -293,6 +338,41 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ═══ MANAGER OVERVIEW HUB ═══ */}
+      {isManager && (
+        <section className="section manager-ops-hub reveal">
+          <div className="container">
+            <div className="section-header-block">
+              <h2 className="section-headline">Administrative Oversight.</h2>
+              <p className="section-desc">Manage your area's performance and ensure service integrity.</p>
+            </div>
+            
+            <div className="manager-dashboard-preview">
+              <div className="preview-card">
+                <ShieldCheck size={32} className="preview-icon" />
+                <h3>Provider Pipeline</h3>
+                <p>Track new applications from technicians in your area. Approve those with verified skills and NIDs.</p>
+                <Link to="/manager" className="preview-btn">View Queue</Link>
+              </div>
+              
+              <div className="preview-card highlight">
+                <AlertCircle size={32} className="preview-icon" />
+                <h3>Resolution Center</h3>
+                <p>Investigate disputes and complaints. Your decisions keep the marketplace fair and trustworthy.</p>
+                <Link to="/manager" className="preview-btn">Check Disputes</Link>
+              </div>
+
+              <div className="preview-card">
+                <Star size={32} className="preview-icon" />
+                <h3>Quality Audit</h3>
+                <p>Monitor customer reviews and feedback to identify top-performing providers in your region.</p>
+                <Link to="/manager" className="preview-btn">Audit Feed</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ═══ STATS BAR ═══ */}
       <section className="stats-bar-section" id="stats">
         <div className="container">
@@ -362,27 +442,29 @@ export default function HomePage() {
       </section>
 
       {/* ═══ PROCESS SECTION (WATERLINE NUMBERS) ═══ */}
-      <section className="section process-section-light" id="process">
-        <div className="container">
-          <div className="section-header-block reveal">
-            <h2 className="section-headline">How we operate.</h2>
-            <p className="section-desc">A highly organized model designed for absolute integrity.</p>
-          </div>
+      {!isManager && (
+        <section className="section process-section-light" id="process">
+          <div className="container">
+            <div className="section-header-block reveal">
+              <h2 className="section-headline">How we operate.</h2>
+              <p className="section-desc">A highly organized model designed for absolute integrity.</p>
+            </div>
 
-          <div className="process-waterline-flow reveal">
-            <div className="process-line-connector" />
-            {PROCESS_STEPS.map((step, idx) => (
-              <div className="process-waterline-card" key={idx}>
-                <span className="waterline-large-num">{step.num}</span>
-                <div className="process-card-content">
-                  <h3 className="process-step-title">{step.title}</h3>
-                  <p className="process-step-desc">{step.desc}</p>
+            <div className="process-waterline-flow reveal">
+              <div className="process-line-connector" />
+              {PROCESS_STEPS.map((step, idx) => (
+                <div className="process-waterline-card" key={idx}>
+                  <span className="waterline-large-num">{step.num}</span>
+                  <div className="process-card-content">
+                    <h3 className="process-step-title">{step.title}</h3>
+                    <p className="process-step-desc">{step.desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ═══ WHY CHOOSE US (TRUST GRID) ═══ */}
       <section className="section trust-section" id="why-us">
@@ -439,27 +521,41 @@ export default function HomePage() {
           <div className="cta-panel-dark reveal">
             <div className="cta-panel-mesh" />
             <h2 className="cta-panel-title">
-              Ready to hire verified local technicians with escrow security?
+              {isManager 
+                ? "Oversee your area and maintain service quality." 
+                : "Ready to hire verified local technicians with escrow security?"}
             </h2>
             <p className="cta-panel-subtitle">
-              Creating an account takes less than a minute. Secure your bookings today.
+              {isManager 
+                ? "Access advanced tools for verification and complaint resolution." 
+                : "Creating an account takes less than a minute. Secure your bookings today."}
             </p>
             <div className="cta-panel-actions">
-              <Link to="/register" className="btn btn-primary btn-lg">
-                <Zap size={14} fill="currentColor" /> Create Your Account
-              </Link>
-              <Link to="/services" className="btn btn-outline btn-lg cta-outline-dark">
-                Explore Services
-              </Link>
+              {isManager ? (
+                <Link to="/manager" className="btn btn-primary btn-lg">
+                  <LayoutDashboard size={16} /> Enter Manager Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link to="/register" className="btn btn-primary btn-lg">
+                    <Zap size={14} fill="currentColor" /> Create Your Account
+                  </Link>
+                  <Link to="/services" className="btn btn-outline btn-lg cta-outline-dark">
+                    Explore Services
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
       </section>
 
       {/* ═══ MOBILE FLOATING CTA ═══ */}
-      <Link to="/services" className="mobile-floating-booking-btn" id="mobile-floating-booking-btn">
-        <Zap size={14} fill="currentColor" /> Book Now
-      </Link>
+      {!isManager && (
+        <Link to="/services" className="mobile-floating-booking-btn" id="mobile-floating-booking-btn">
+          <Zap size={14} fill="currentColor" /> Book Now
+        </Link>
+      )}
     </div>
   );
 }
