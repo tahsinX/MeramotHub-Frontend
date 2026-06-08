@@ -438,6 +438,57 @@ input, textarea, select {
   margin-top: 4px;
 }
 
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-icon > svg:first-child {
+  position: absolute;
+  left: 12px;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.input-with-icon .form-input {
+  padding-left: 36px;
+}
+
+.input-with-icon .form-input:last-child {
+  padding-right: 40px;
+}
+
+.input-with-icon .btn-icon {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--color-text-secondary);
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  z-index: 1;
+}
+
+.input-with-icon .btn-icon:hover {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 /* Tables mapping */
 .table-wrapper {
   overflow-x: auto;

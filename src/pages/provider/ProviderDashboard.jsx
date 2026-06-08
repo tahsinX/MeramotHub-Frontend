@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, DollarSign, PlusCircle, X,
-  Star, CheckCircle, Clock, XCircle, ToggleLeft, ToggleRight, User
+  Star, CheckCircle, Clock, XCircle, ToggleLeft, ToggleRight, User, MessageCircle
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 import ProfilePage from '../shared/ProfilePage';
+import ChatPage from '../shared/ChatPage';
 import LocationPicker from '../../components/LocationPicker';
 import '../customer/CustomerDashboard.css';
 
@@ -20,6 +21,12 @@ const NAV_ITEMS = [
       { name: 'My Jobs', path: '/provider/jobs', icon: <Briefcase size={18} /> },
       { name: 'Post Job', path: '/provider/post-job', icon: <PlusCircle size={18} /> },
       { name: 'Earnings', path: '/provider/earnings', icon: <DollarSign size={18} /> },
+    ],
+  },
+  {
+    label: 'Communication',
+    items: [
+      { name: 'Messages', path: '/provider/messages', icon: <MessageCircle size={18} /> },
     ],
   },
 ];
@@ -1028,6 +1035,8 @@ export default function ProviderDashboard() {
         <Route path="post-job" element={<PostJob />} />
         <Route path="profile" element={<ProviderProfile />} />
         <Route path="account" element={<ProfilePage />} />
+        <Route path="messages" element={<ChatPage />} />
+        <Route path="messages/:userId" element={<ChatPage />} />
         <Route path="*" element={<Navigate to="/provider" replace />} />
       </Routes>
     </DashboardLayout>

@@ -115,6 +115,7 @@ class ApiClient {
     return this.get('/services/categories');
   }
 
+  // Backend GET /services/items should return items with provider_id, provider_name, provider_area
   getServiceItems(categoryId) {
     const q = categoryId ? `?category_id=${categoryId}` : '';
     return this.get(`/services/items${q}`);
@@ -281,6 +282,10 @@ class ApiClient {
     return this.get('/admin/providers/verified');
   }
 
+  createAreaManager(data) {
+    return this.post('/admin/area-managers', data);
+  }
+
   // ──── Chatbot ────
   chatBot(message) {
     return this.post('/chat/bot', { message });
@@ -288,6 +293,23 @@ class ApiClient {
 
   getWhatsAppLink(providerId) {
     return this.post('/chat/whatsapp', { provider_id: providerId });
+  }
+
+  // ──── In-platform Messaging ────
+  sendMessage(receiverId, text) {
+    return this.post('/chat/messages', { receiver_id: receiverId, text });
+  }
+
+  getConversations() {
+    return this.get('/chat/conversations');
+  }
+
+  getConversationMessages(userId) {
+    return this.get(`/chat/conversations/${userId}/messages`);
+  }
+
+  getChatUser(userId) {
+    return this.get(`/chat/users/${userId}`);
   }
 
   // ──── Priyo / Subscription ────

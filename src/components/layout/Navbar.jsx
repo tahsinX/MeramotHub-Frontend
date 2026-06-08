@@ -10,7 +10,6 @@ import './Navbar.css';
 
 export default function Navbar({ isDashboard }) {
   const { user, isAuthenticated, logout } = useAuth();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const location = useLocation();
@@ -23,7 +22,6 @@ export default function Navbar({ isDashboard }) {
   }, []);
 
   useEffect(() => {
-    setMobileOpen(false);
     setProfileOpen(false);
   }, [location]);
 
