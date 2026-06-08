@@ -15,6 +15,7 @@ import CustomerDashboard from './pages/customer/CustomerDashboard';
 import ProviderDashboard from './pages/provider/ProviderDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManagerDashboard from './pages/manager/ManagerDashboard';
+import ChatWidget from './components/chat/ChatWidget';
 
 function AppLayout() {
   const location = useLocation();
@@ -87,6 +88,7 @@ function AppLayout() {
         } />
       </Routes>
       {!isDashboard && <Footer />}
+      <ChatWidget />
     </>
   );
 }

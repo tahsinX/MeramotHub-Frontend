@@ -40,8 +40,9 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    api.logout();
+    api.removeToken();
     setUser(null);
+    window.location.href = '/';
   };
 
   const updateUser = useCallback((updated) => {

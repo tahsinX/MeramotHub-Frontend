@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  Wrench, LogOut, User, LayoutDashboard,
+  Menu, X, LogOut, User, LayoutDashboard,
   ChevronDown, Zap
 } from 'lucide-react';
+import logo from '../../assets/Meramot hub icon.png';
 import './Navbar.css';
 
 export default function Navbar({ isDashboard }) {
@@ -65,12 +66,7 @@ export default function Navbar({ isDashboard }) {
       <div className="navbar-inner container">
         {/* Logo */}
         <Link to="/" className="navbar-logo" id="navbar-logo">
-          <div className="logo-icon">
-            <Wrench size={22} />
-          </div>
-          <span className="logo-text">
-            Meramot<span className="logo-accent">Hub</span>
-          </span>
+          <img src={logo} alt="MeramotHub" className="navbar-logo-img" />
         </Link>
 
         {/* Desktop Nav */}
@@ -149,8 +145,73 @@ export default function Navbar({ isDashboard }) {
               </Link>
             </>
           )}
+
+          {/* Mobile toggle */}
+          <button
+            className="mobile-toggle"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMobileOpen(!mobileOpen);
+            }}
+            id="mobile-menu-toggle"
+          >
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <>
+          <div className="mobile-menu-overlay" onClick={() => setMobileOpen(false)} />
+          <div className="mobile-menu" id="mobile-menu">
+            {!isDashboard && (
+              <div style={{ marginBottom: '32px' }}>
+                <div className="mobile-menu-section-label">Navigation</div>
+                <div className="mobile-menu-section">
+                  <Link to="/" className={`mobile-link ${location.pathname === '/' ? 'active' : ''}`}>
+                    Home <User size={18} />
+                  </Link>
+                  <Link to="/services" className={`mobile-link ${location.pathname.startsWith('/services') ? 'active' : ''}`}>
+                    Services <Zap size={18} />
+                  </Link>
+                  <Link to="/about" className={`mobile-link ${location.pathname === '/about' ? 'active' : ''}`}>
+                    About <LayoutDashboard size={18} />
+                  </Link>
+                </div>
+              </div>
+            )}
+            <div>
+              <div className="mobile-menu-section-label">Account</div>
+              <div className="mobile-menu-section">
+                {isAuthenticated ? (
+                  <>
+                    <Link to={getDashboardPath()} className="mobile-link">
+                      Dashboard <LayoutDashboard size={18} />
+                    </Link>
+                    <Link to={getProfilePath()} className="mobile-link">
+                      Profile <User size={18} />
+                    </Link>
+                    <button className="mobile-link danger" onClick={handleLogout}>
+                      Sign Out <LogOut size={18} />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" className="mobile-link">
+                      Sign In <User size={18} />
+                    </Link>
+                    <Link to="/register" className="btn btn-primary" style={{ margin: '16px 0', height: '48px', justifyContent: 'center', borderRadius: '12px' }}>
+                      <Zap size={16} /> Get Started
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </nav>
   );
 }
