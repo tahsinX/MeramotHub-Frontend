@@ -9,8 +9,8 @@
 
 .dashboard-sidebar {
   width: 70px;
-  background: #0A0F1D;
-  color: white;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -18,8 +18,8 @@
   left: 0;
   bottom: 0;
   z-index: 99;
-  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, border-color 0.3s ease;
+  border-right: 1px solid var(--sidebar-border);
   overflow-x: hidden;
 }
 
@@ -78,7 +78,7 @@
 
 .sidebar-user-role {
   font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--sidebar-text-dim);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -86,7 +86,7 @@
 
 .sidebar-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sidebar-divider);
   margin: 0 24px 24px;
 }
 
@@ -106,7 +106,7 @@
 .sidebar-section-title {
   font-size: 0.75rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--sidebar-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 12px;
@@ -122,7 +122,7 @@
 .sidebar-close-title-btn {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--sidebar-text-faint);
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
@@ -133,8 +133,8 @@
 }
 
 .sidebar-close-title-btn:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--sidebar-text);
+  background: var(--sidebar-hover-bg);
 }
 
 .sidebar-nav-item {
@@ -143,7 +143,7 @@
   justify-content: center;
   gap: 12px;
   padding: 12px 0;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--sidebar-text);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
@@ -158,19 +158,19 @@
 }
 
 .sidebar-nav-item:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--sidebar-text);
+  background: var(--sidebar-hover-bg);
 }
 
 .sidebar-nav-item.active {
-  color: white;
-  background: rgba(37, 99, 235, 0.15);
+  color: var(--color-blue);
+  background: var(--sidebar-active-bg);
 }
 
 
 
 .sidebar-nav-item svg {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--sidebar-text-dim);
   transition: all var(--transition);
   flex-shrink: 0;
   filter: drop-shadow(0 0 0 transparent);
@@ -178,16 +178,16 @@
 
 .dashboard-sidebar:not(.open) .sidebar-nav-item:hover svg {
   color: var(--color-blue);
-  filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.4)) drop-shadow(0 0 20px rgba(37, 99, 235, 0.15));
+  filter: var(--sidebar-glow) drop-shadow(0 0 20px rgba(37, 99, 235, 0.15));
 }
 
 .dashboard-sidebar:not(.open) .sidebar-nav-item.active svg {
   box-shadow: none;
-  background: rgba(232, 37, 235, 0.08);
+  background: var(--sidebar-active-bg-collapsed);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: var(--color-blue);
-  filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.6)) drop-shadow(0 0 20px rgba(37, 99, 235, 0.3));
+  filter: var(--sidebar-glow-intense) drop-shadow(0 0 20px rgba(37, 99, 235, 0.3));
 }
 
 .sidebar-nav-item:hover svg,
@@ -214,15 +214,15 @@
   justify-content: center;
   background: none;
   border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: white;
+  border-bottom: 1px solid var(--sidebar-divider);
+  color: var(--sidebar-text);
   cursor: pointer;
   flex-shrink: 0;
   transition: background 0.2s ease;
 }
 
 .sidebar-toggle:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--sidebar-hover-bg);
 }
 
 .dashboard-sidebar.open .sidebar-toggle {
@@ -230,14 +230,10 @@
   padding-right: 18px;
 }
 
-.sidebar-mobile-toggle {
-  display: none;
-}
-
 .sidebar-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.3);
+  background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(8px);
   z-index: 90;
   animation: fadeIn 0.4s ease;
@@ -245,7 +241,8 @@
 
 @media (max-width: 1024px) {
   .dashboard-main {
-    padding: calc(var(--nav-height) + 32px) 24px 32px;
+    margin-left: 70px;
+    padding: calc(var(--nav-height) + 24px) 16px 24px;
   }
 }
 
