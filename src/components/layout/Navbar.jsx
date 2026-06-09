@@ -138,10 +138,6 @@ export default function Navbar({ isDashboard }) {
                       </div>
                     </div>
                     <div className="dropdown-divider" />
-                    <Link to={getDashboardPath()} className="dropdown-item">
-                      <LayoutDashboard size={16} />
-                      Dashboard
-                    </Link>
                     <Link to={getProfilePath()} className="dropdown-item">
                       <User size={16} />
                       My Profile

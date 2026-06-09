@@ -378,7 +378,6 @@ input, textarea, select {
 .sidebar-nav-item.active {
   color: var(--color-text-primary);
   background-color: var(--color-bg);
-  border-left-color: var(--color-blue);
   font-weight: 600;
 }
 

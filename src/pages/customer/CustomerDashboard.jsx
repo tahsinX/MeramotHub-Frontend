@@ -14,9 +14,11 @@ import './CustomerDashboard.css';
 
 const NAV_ITEMS = [
   {
+
+
     label: 'Main',
     items: [
-      { name: 'Overview', path: '/customer', icon: <LayoutDashboard size={18} /> },
+      { name: 'Dashboard', path: '/customer', icon: <LayoutDashboard size={18} /> },
       { name: 'My Bookings', path: '/customer/bookings', icon: <CalendarCheck size={18} /> },
       { name: 'My Reviews', path: '/customer/reviews', icon: <Star size={18} /> },
     ],
@@ -27,7 +29,7 @@ const NAV_ITEMS = [
       { name: 'Messages', path: '/customer/messages', icon: <MessageCircle size={18} /> },
       { name: 'My Complaints', path: '/customer/complaints', icon: <AlertTriangle size={18} /> },
       { name: 'Browse Services', path: '/customer/ads', icon: <Megaphone size={18} /> },
-      { name: 'AI Chatbot', path: '/customer/chat', icon: <MessageCircle size={18} /> },
+      
       { name: 'Priyo Workshop', path: '/customer/priyo', icon: <Heart size={18} /> },
     ],
   },
