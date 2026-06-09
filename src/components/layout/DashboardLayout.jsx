@@ -11,22 +11,23 @@ export default function DashboardLayout({ children, navItems, title }) {
 
   return (
     <div className="dashboard-layout">
-      {/* Mobile sidebar toggle */}
-      <button
-        className="sidebar-mobile-toggle btn btn-ghost btn-icon"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        id="sidebar-toggle"
-      >
-        {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
-      </button>
-
-      {/* Sidebar overlay for mobile */}
+      {/* Sidebar overlay */}
       {sidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
       <aside className={`dashboard-sidebar ${sidebarOpen ? 'open' : ''}`} id="dashboard-sidebar">
+        {/* Hamburger toggle at the top */}
+        <button
+          className="sidebar-toggle"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          id="sidebar-toggle"
+          title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+        >
+          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+
         <div className="sidebar-user">
           <div className="sidebar-avatar">
             {user?.full_name?.charAt(0)?.toUpperCase()}
@@ -43,7 +44,9 @@ export default function DashboardLayout({ children, navItems, title }) {
           {navItems.map((section, si) => (
             <div key={si}>
               {section.label && (
-                <div className="sidebar-section-title">{section.label}</div>
+                <div className="sidebar-section-title">
+                  <span>{section.label}</span>
+                </div>
               )}
               {section.items.map((item) => (
                 <Link
