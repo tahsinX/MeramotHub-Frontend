@@ -247,9 +247,26 @@
 
   /* Hide desktop buttons when on mobile to prevent overlap */
   #login-btn,
-  #register-btn,
-  .profile-menu {
+  #register-btn {
     display: none;
+  }
+
+  /* Keep profile menu visible but compact on mobile */
+  .profile-menu {
+    display: block;
+  }
+
+  .profile-trigger {
+    padding: 6px;
+    gap: 0;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .profile-info {
@@ -258,5 +275,13 @@
 
   .chevron {
     display: none;
+  }
+
+  /* Position dropdown correctly for mobile */
+  .profile-dropdown {
+    position: fixed;
+    top: var(--nav-height);
+    right: 12px;
+    width: 220px;
   }
 }
