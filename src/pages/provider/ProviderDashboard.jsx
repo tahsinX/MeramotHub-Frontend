@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, DollarSign, PlusCircle, Crown, X,
   Star, CheckCircle, Clock, XCircle, ToggleLeft, ToggleRight, MessageCircle,
-  Users, Sparkles, Zap, ShieldCheck
+  Users, Sparkles, Zap, ShieldCheck, ChevronDown
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
@@ -340,6 +340,19 @@ function PostJob() {
   const [editTarget, setEditTarget] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', base_price: '', unit: '', description: '' });
   const [savingEdit, setSavingEdit] = useState(false);
+  const [isUnitOpen, setIsUnitOpen] = useState(false);
+  const [isEditUnitOpen, setIsEditUnitOpen] = useState(false);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClose = () => {
+      setIsUnitOpen(false);
+      setIsEditUnitOpen(false);
+      setIsCategoryOpen(false);
+    };
+    window.addEventListener('click', handleClose);
+    return () => window.removeEventListener('click', handleClose);
+  }, []);
 
   const addItem = (item) => {
     setMyItems(prev => [item, ...prev]);
@@ -437,6 +450,14 @@ function PostJob() {
     }
   };
 
+  const UNIT_MAP = {
+    per_unit: 'Per Unit',
+    per_hour: 'Per Hour',
+    per_visit: 'Per Visit',
+    per_day: 'Per Day',
+    fixed: 'Fixed',
+  };
+
   if (loading) return <div className="loader"><div className="spinner" /></div>;
 
   const categoryName = categories.find(c => String(c.id) === form.category_id)?.name;
@@ -483,13 +504,37 @@ function PostJob() {
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
         </div>
 
-        <div className="form-group">
-          <label className="form-label">Category</label>
-          <input className="form-input" value={categoryName || 'Loading...'} disabled
-            style={{ opacity: 0.6, cursor: 'not-allowed' }} />
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
-            Your skill category is fixed based on your provider profile
-          </span>
+        <div className="form-group" style={{ position: 'relative' }}>
+          <label className="form-label">Category *</label>
+          <div className="custom-dropdown">
+            <button
+              type="button"
+              className="custom-dropdown-trigger"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCategoryOpen(!isCategoryOpen);
+              }}
+            >
+              <span>{categoryName || 'Select Category'}</span>
+              <ChevronDown size={18} className={`dropdown-icon ${isCategoryOpen ? 'open' : ''}`} />
+            </button>
+            {isCategoryOpen && (
+              <div className="custom-dropdown-menu">
+                {categories.map(c => (
+                  <div
+                    key={c.id}
+                    className={`custom-dropdown-item ${String(form.category_id) === String(c.id) ? 'selected' : ''}`}
+                    onClick={() => {
+                      setForm(f => ({ ...f, category_id: String(c.id) }));
+                      setIsCategoryOpen(false);
+                    }}
+                  >
+                    {c.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
@@ -498,16 +543,37 @@ function PostJob() {
             <input type="number" className="form-input" placeholder="0" min="0" value={form.base_price}
               onChange={e => setForm(f => ({ ...f, base_price: e.target.value }))} required />
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ position: 'relative' }}>
             <label className="form-label">Unit</label>
-            <select className="form-select" value={form.unit}
-              onChange={e => setForm(f => ({ ...f, unit: e.target.value }))}>
-              <option value="per_unit">Per Unit</option>
-              <option value="per_hour">Per Hour</option>
-              <option value="per_visit">Per Visit</option>
-              <option value="per_day">Per Day</option>
-              <option value="fixed">Fixed</option>
-            </select>
+            <div className="custom-dropdown">
+              <button
+                type="button"
+                className="custom-dropdown-trigger"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsUnitOpen(!isUnitOpen);
+                }}
+              >
+                <span>{UNIT_MAP[form.unit] || 'Select Unit'}</span>
+                <ChevronDown size={18} className={`dropdown-icon ${isUnitOpen ? 'open' : ''}`} />
+              </button>
+              {isUnitOpen && (
+                <div className="custom-dropdown-menu">
+                  {Object.entries(UNIT_MAP).map(([val, label]) => (
+                    <div
+                      key={val}
+                      className={`custom-dropdown-item ${form.unit === val ? 'selected' : ''}`}
+                      onClick={() => {
+                        setForm(f => ({ ...f, unit: val }));
+                        setIsUnitOpen(false);
+                      }}
+                    >
+                      {label}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -603,16 +669,37 @@ function PostJob() {
                   <input type="number" className="form-input" min="0" step="0.01" value={editForm.base_price}
                     onChange={e => setEditForm(f => ({ ...f, base_price: e.target.value }))} required />
                 </div>
-                <div className="form-group">
+                <div className="form-group" style={{ position: 'relative' }}>
                   <label className="form-label">Unit</label>
-                  <select className="form-select" value={editForm.unit}
-                    onChange={e => setEditForm(f => ({ ...f, unit: e.target.value }))}>
-                    <option value="per_unit">Per Unit</option>
-                    <option value="per_hour">Per Hour</option>
-                    <option value="per_visit">Per Visit</option>
-                    <option value="per_day">Per Day</option>
-                    <option value="fixed">Fixed</option>
-                  </select>
+                  <div className="custom-dropdown">
+                    <button
+                      type="button"
+                      className="custom-dropdown-trigger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsEditUnitOpen(!isEditUnitOpen);
+                      }}
+                    >
+                      <span>{UNIT_MAP[editForm.unit] || 'Select Unit'}</span>
+                      <ChevronDown size={18} className={`dropdown-icon ${isEditUnitOpen ? 'open' : ''}`} />
+                    </button>
+                    {isEditUnitOpen && (
+                      <div className="custom-dropdown-menu">
+                        {Object.entries(UNIT_MAP).map(([val, label]) => (
+                          <div
+                            key={val}
+                            className={`custom-dropdown-item ${editForm.unit === val ? 'selected' : ''}`}
+                            onClick={() => {
+                              setEditForm(f => ({ ...f, unit: val }));
+                              setIsEditUnitOpen(false);
+                            }}
+                          >
+                            {label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="form-group">
                   <label className="form-label">Description</label>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, CalendarCheck, Star, AlertTriangle, X,
-  MessageCircle, Heart, Clock, CheckCircle, XCircle, Megaphone, ThumbsUp, Crown, Sparkles
+  MessageCircle, Heart, Clock, CheckCircle, XCircle, Megaphone, ThumbsUp, Crown, Sparkles, ChevronDown
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import LocationPicker from '../../components/LocationPicker';
@@ -794,6 +794,199 @@ const PAYMENT_METHODS = [
   { id: 'bank', label: 'Bank', icon: '🏦' },
 ];
 
+function CustomDateTimePicker({ value, onChange }) {
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  const dateValue = value ? new Date(value) : new Date();
+  const isValidDate = value && !isNaN(dateValue.getTime());
+
+  const year = isValidDate ? dateValue.getFullYear() : new Date().getFullYear();
+  const month = isValidDate ? dateValue.getMonth() : new Date().getMonth();
+  const day = isValidDate ? dateValue.getDate() : new Date().getDate();
+  const hour = isValidDate ? dateValue.getHours() : 12;
+  const minute = isValidDate ? dateValue.getMinutes() : 0;
+
+  const updateDate = (newYear, newMonth, newDay, newHour, newMinute) => {
+    const d = new Date();
+    d.setFullYear(newYear !== undefined ? newYear : year);
+    d.setMonth(newMonth !== undefined ? newMonth : month);
+    d.setDate(newDay !== undefined ? newDay : day);
+    d.setHours(newHour !== undefined ? newHour : hour);
+    d.setMinutes(newMinute !== undefined ? newMinute : minute);
+    d.setSeconds(0);
+    d.setMilliseconds(0);
+    onChange(d.toISOString().slice(0, 16));
+  };
+
+  const monthsList = [
+    { value: 0, label: 'January' },
+    { value: 1, label: 'February' },
+    { value: 2, label: 'March' },
+    { value: 3, label: 'April' },
+    { value: 4, label: 'May' },
+    { value: 5, label: 'June' },
+    { value: 6, label: 'July' },
+    { value: 7, label: 'August' },
+    { value: 8, label: 'September' },
+    { value: 9, label: 'October' },
+    { value: 10, label: 'November' },
+    { value: 11, label: 'December' }
+  ];
+
+  const yearsList = [2025, 2026, 2027, 2028, 2029, 2030];
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysList = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  const hoursList = Array.from({ length: 24 }, (_, i) => i);
+  const minutesList = [0, 15, 30, 45];
+
+  const [navMonth, setNavMonth] = useState(new Date(year, month, 1));
+  const navYear = navMonth.getFullYear();
+  const navMonthIndex = navMonth.getMonth();
+
+  const firstDay = new Date(navYear, navMonthIndex, 1).getDay();
+  const totalDays = new Date(navYear, navMonthIndex + 1, 0).getDate();
+
+  const calendarDays = [];
+  for (let i = 0; i < firstDay; i++) calendarDays.push(null);
+  for (let i = 1; i <= totalDays; i++) calendarDays.push(new Date(navYear, navMonthIndex, i));
+
+  useEffect(() => {
+    const close = () => setShowCalendar(false);
+    window.addEventListener('click', close);
+    return () => window.removeEventListener('click', close);
+  }, []);
+
+  const selectCalendarDate = (date) => {
+    if (!date) return;
+    updateDate(date.getFullYear(), date.getMonth(), date.getDate());
+    setShowCalendar(false);
+  };
+
+  return (
+    <div className="custom-datetime-container" onClick={(e) => e.stopPropagation()}>
+      <div className="datetime-selectors-group">
+        <select
+          className="form-select date-part-select"
+          value={month}
+          onChange={(e) => updateDate(year, Number(e.target.value), day)}
+        >
+          {monthsList.map(m => (
+            <option key={m.value} value={m.value}>{m.label}</option>
+          ))}
+        </select>
+
+        <select
+          className="form-select date-part-select"
+          value={day}
+          onChange={(e) => updateDate(year, month, Number(e.target.value))}
+        >
+          {daysList.map(d => (
+            <option key={d} value={d}>{d}</option>
+          ))}
+        </select>
+
+        <select
+          className="form-select date-part-select"
+          value={year}
+          onChange={(e) => updateDate(Number(e.target.value), month, day)}
+        >
+          {yearsList.map(y => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+
+        <span className="datetime-divider-label">Time:</span>
+        <select
+          className="form-select date-part-select"
+          value={hour}
+          onChange={(e) => updateDate(year, month, day, Number(e.target.value))}
+        >
+          {hoursList.map(h => (
+            <option key={h} value={h}>{String(h).padStart(2, '0')}</option>
+          ))}
+        </select>
+
+        <select
+          className="form-select date-part-select"
+          value={Math.round(minute / 15) * 15 % 60}
+          onChange={(e) => updateDate(year, month, day, hour, Number(e.target.value))}
+        >
+          {minutesList.map(m => (
+            <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
+          ))}
+        </select>
+
+        <button
+          type="button"
+          className="calendar-btn-inline"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowCalendar(!showCalendar);
+          }}
+        >
+          📅
+        </button>
+      </div>
+
+      {showCalendar && (
+        <div className="custom-calendar-popup inline-popup">
+          <div className="calendar-header">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setNavMonth(new Date(navYear, navMonthIndex - 1, 1));
+              }}
+              className="btn-nav"
+            >
+              ◀
+            </button>
+            <span className="current-month-year">
+              {navMonth.toLocaleString('default', { month: 'long' })} {navYear}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setNavMonth(new Date(navYear, navMonthIndex + 1, 1));
+              }}
+              className="btn-nav"
+            >
+              ▶
+            </button>
+            <button type="button" onClick={() => setShowCalendar(false)} className="btn-close-calendar">✕</button>
+          </div>
+
+          <div className="calendar-weekdays">
+            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+          </div>
+
+          <div className="calendar-days">
+            {calendarDays.map((date, idx) => {
+              if (!date) return <span key={`empty-${idx}`} className="empty-day" />;
+              const isSelected = isValidDate &&
+                date.getDate() === day &&
+                date.getMonth() === month &&
+                date.getFullYear() === year;
+              return (
+                <button
+                  type="button"
+                  key={`day-${idx}`}
+                  className={`day-btn ${isSelected ? 'selected' : ''}`}
+                  onClick={() => selectCalendarDate(date)}
+                >
+                  {date.getDate()}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BookService() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -971,12 +1164,9 @@ function BookService() {
 
         <div className="form-group">
           <label className="form-label">Scheduled Date & Time *</label>
-          <input
-            type="datetime-local"
-            className="form-input"
+          <CustomDateTimePicker
             value={scheduledAt}
-            onChange={(e) => setScheduledAt(e.target.value)}
-            required
+            onChange={(val) => setScheduledAt(val)}
           />
         </div>
 
@@ -1182,6 +1372,7 @@ function BrowseServices() {
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [proStatus, setProStatus] = useState(null);
   const [favorites, setFavorites] = useState(new Set());
@@ -1189,6 +1380,12 @@ function BrowseServices() {
   const [favCount, setFavCount] = useState(0);
   const [favToggling, setFavToggling] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleClose = () => setIsDropdownOpen(false);
+    window.addEventListener('click', handleClose);
+    return () => window.removeEventListener('click', handleClose);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -1234,9 +1431,17 @@ function BrowseServices() {
     }
   };
 
+  const sortedServices = [...services].sort((a, b) => {
+    const aIsDummy = a.name?.toLowerCase().includes('dummy') || a.description?.toLowerCase().includes('dummy');
+    const bIsDummy = b.name?.toLowerCase().includes('dummy') || b.description?.toLowerCase().includes('dummy');
+    if (aIsDummy && !bIsDummy) return 1;
+    if (!aIsDummy && bIsDummy) return -1;
+    return 0;
+  });
+
   const filtered = selectedCategory
-    ? services.filter(s => String(s.category_id) === String(selectedCategory))
-    : services;
+    ? sortedServices.filter(s => String(s.category_id) === String(selectedCategory))
+    : sortedServices;
 
   if (loading) return <div className="loader"><div className="spinner" /></div>;
 
@@ -1260,15 +1465,50 @@ function BrowseServices() {
       )}
 
       {categories.length > 0 && (
-        <div className="form-group" style={{ maxWidth: 320, marginBottom: 32 }}>
+        <div className="form-group" style={{ maxWidth: 320, marginBottom: 32, position: 'relative' }}>
           <label className="form-label">Filter by Category</label>
-          <select className="form-select" value={selectedCategory}
-            onChange={e => setSelectedCategory(e.target.value)}>
-            <option value="">All Categories</option>
-            {categories.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+          <div className="custom-dropdown">
+            <button
+              type="button"
+              className="custom-dropdown-trigger"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsDropdownOpen(!isDropdownOpen);
+              }}
+            >
+              <span>
+                {selectedCategory
+                  ? categories.find(c => String(c.id) === String(selectedCategory))?.name
+                  : 'All Categories'}
+              </span>
+              <ChevronDown size={18} className={`dropdown-icon ${isDropdownOpen ? 'open' : ''}`} />
+            </button>
+            {isDropdownOpen && (
+              <div className="custom-dropdown-menu">
+                <div
+                  className={`custom-dropdown-item ${!selectedCategory ? 'selected' : ''}`}
+                  onClick={() => {
+                    setSelectedCategory('');
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  All Categories
+                </div>
+                {categories.map(c => (
+                  <div
+                    key={c.id}
+                    className={`custom-dropdown-item ${String(selectedCategory) === String(c.id) ? 'selected' : ''}`}
+                    onClick={() => {
+                      setSelectedCategory(c.id);
+                      setIsDropdownOpen(false);
+                    }}
+                  >
+                    {c.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
