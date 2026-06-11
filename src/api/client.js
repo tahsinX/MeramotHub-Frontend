@@ -161,17 +161,13 @@ class ApiClient {
     return this.get('/providers/profile/me');
   }
 
-  updateProviderLocation(data) {
-    return this.patch('/providers/profile/location', data);
-  }
-
-  verifyProvider(id, data) {
-    return this.patch(`/providers/${id}/verify`, data);
-  }
-
   // ──── Bookings ────
   createBooking(data) {
     return this.post('/bookings/', data);
+  }
+
+  payAndBook(data) {
+    return this.post('/bookings/pay-and-book', data);
   }
 
   getMyBookings() {
@@ -211,8 +207,16 @@ class ApiClient {
     return this.get('/payments/earnings');
   }
 
+  getProviderEarningsSummary() {
+    return this.get('/payments/provider-summary');
+  }
+
   getPaymentDashboard() {
     return this.get('/payments/dashboard');
+  }
+
+  refundPayment(bookingId) {
+    return this.post(`/payments/${bookingId}/refund`);
   }
 
   // ──── Reviews ────
@@ -249,9 +253,25 @@ class ApiClient {
     return this.patch(`/complaints/${id}/resolve`, data);
   }
 
+  approveComplaint(id) {
+    return this.patch(`/complaints/${id}/approve`);
+  }
+
+  rejectComplaint(id) {
+    return this.patch(`/complaints/${id}/reject`);
+  }
+
+  reworkBooking(complaintId) {
+    return this.post(`/complaints/${complaintId}/rework`);
+  }
+
   // ──── Admin ────
   getAdminStats() {
     return this.get('/admin/stats');
+  }
+
+  getRecentBookings() {
+    return this.get('/admin/recent-bookings');
   }
 
   getAdminUsers() {
@@ -272,6 +292,10 @@ class ApiClient {
 
   getAreaManagerStats() {
     return this.get('/admin/area-manager/stats');
+  }
+
+  getAreaManagerRecentActivity() {
+    return this.get('/admin/area-manager/recent-activity');
   }
 
   approveProvider(id) {

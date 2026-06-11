@@ -23,6 +23,7 @@ const NAV_ITEMS = [
     label: 'Operations',
     items: [
       { name: 'Complaints', path: '/admin/complaints', icon: <AlertTriangle size={18} /> },
+      { name: 'Pending Approvals', path: '/admin/pending-approvals', icon: <Shield size={18} /> },
       { name: 'Verifications', path: '/admin/verifications', icon: <Shield size={18} /> },
       { name: 'Provider Approvals', path: '/admin/provider-approvals', icon: <UserCog size={18} /> },
     ],
@@ -41,7 +42,9 @@ function StatusBadge({ status }) {
     pending: 'badge-warning', accepted: 'badge-info', started: 'badge-info',
     completed: 'badge-success', cancelled: 'badge-danger', disputed: 'badge-danger',
     open: 'badge-warning', assigned: 'badge-info', resolved: 'badge-success',
-    dismissed: 'badge-neutral', verified: 'badge-success', rejected: 'badge-danger',
+    dismissed: 'badge-neutral', pending_approval: 'badge-warning',
+    refunded: 'badge-danger', rework: 'badge-warning',
+    verified: 'badge-success', rejected: 'badge-danger',
   };
   return <span className={`badge ${map[status] || 'badge-neutral'}`}>{status}</span>;
 }
@@ -49,13 +52,17 @@ function StatusBadge({ status }) {
 /* ── Overview ── */
 function Overview() {
   const [stats, setStats] = useState(null);
+  const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getAdminStats()
-      .then(setStats)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    Promise.all([
+      api.getAdminStats().catch(() => null),
+      api.getRecentBookings().then(d => Array.isArray(d) ? d : []).catch(() => []),
+    ]).then(([s, b]) => {
+      setStats(s);
+      setRecentBookings(b);
+    }).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="loader"><div className="spinner" /></div>;
@@ -136,6 +143,42 @@ function Overview() {
             <span className="bd-value">{stats?.completion_rate || '0'}%</span>
           </div>
         </div>
+      </div>
+
+      <div className="dash-section" style={{ marginTop: 48 }}>
+        <h2>Recent Bookings</h2>
+        {recentBookings.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">📋</div>
+            <h3>No bookings yet</h3>
+            <p>Bookings across the platform will appear here</p>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Service</th>
+                  <th>Status</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentBookings.map((b) => (
+                  <tr key={b.id}>
+                    <td><strong>{b.customer_name}</strong></td>
+                    <td>{b.service_name}</td>
+                    <td><StatusBadge status={b.status} /></td>
+                    <td>৳{Number(b.total_price).toLocaleString()}</td>
+                    <td>{new Date(b.created_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -240,13 +283,51 @@ function UsersManagement() {
 function ComplaintsManagement() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [actionId, setActionId] = useState(null);
 
-  useEffect(() => {
+  const loadComplaints = () => {
     api.getAllComplaints()
       .then((data) => setComplaints(Array.isArray(data) ? data : data?.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { loadComplaints(); }, []);
+
+  const resolutionLabel = (res) => {
+    if (res === 'refund') return 'Refund — 90% to customer, 10% commission';
+    if (res === 'rework') return 'Rework — rebook free, 80% provider, 20% commission';
+    if (res === 'resolve') return 'Resolve — complete work, provider paid';
+    return res;
+  };
+
+  const handleApprove = async (id) => {
+    if (!confirm('Approve this resolution? This will execute the financial action.')) return;
+    setActionId(id);
+    try {
+      await api.approveComplaint(id);
+      toast.success('Resolution approved and executed');
+      loadComplaints();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleReject = async (id) => {
+    if (!confirm('Reject this resolution? It will be sent back for review.')) return;
+    setActionId(id);
+    try {
+      await api.rejectComplaint(id);
+      toast.success('Resolution rejected, sent back for review');
+      loadComplaints();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setActionId(null);
+    }
+  };
 
   if (loading) return <div className="loader"><div className="spinner" /></div>;
 
@@ -271,7 +352,7 @@ function ComplaintsManagement() {
                 <div>
                   <h3>{c.subject}</h3>
                   <p className="booking-meta">
-                    #{c.id} · Filed by {c.filed_by?.slice(0, 8)} · {new Date(c.created_at).toLocaleDateString()}
+                    #{c.id} · Booking: {String(c.booking_id).slice(0, 8)} · {new Date(c.created_at).toLocaleDateString()}
                   </p>
                 </div>
                 <StatusBadge status={c.status} />
@@ -279,12 +360,154 @@ function ComplaintsManagement() {
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: 8 }}>
                 {c.description}
               </p>
-              {c.resolution_note && (
+              {c.resolution && (
                 <div className="booking-detail" style={{ marginTop: 12 }}>
-                  <span className="bd-label">Resolution</span>
+                  <span className="bd-label">Proposed Resolution</span>
+                  <span className="bd-value" style={{ textTransform: 'capitalize' }}>{resolutionLabel(c.resolution)}</span>
+                </div>
+              )}
+              {c.resolution_note && (
+                <div className="booking-detail" style={{ marginTop: 8 }}>
+                  <span className="bd-label">Note</span>
                   <span className="bd-value">{c.resolution_note}</span>
                 </div>
               )}
+              {c.resolution && c.status !== 'resolved' && c.status !== 'refunded' && c.status !== 'rework' && c.status !== 'dismissed' && (
+                <div className="booking-card-actions" style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+                  <button
+                    className="btn btn-success btn-sm"
+                    onClick={() => handleApprove(c.id)}
+                    disabled={actionId === c.id}
+                  >
+                    {actionId === c.id ? 'Processing...' : 'Approve'}
+                  </button>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => handleReject(c.id)}
+                    disabled={actionId === c.id}
+                  >
+                    {actionId === c.id ? 'Processing...' : 'Reject'}
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Pending Approvals ── */
+function PendingApprovals() {
+  const [pending, setPending] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionId, setActionId] = useState(null);
+
+  const loadPending = () => {
+    api.getAllComplaints()
+      .then((data) => {
+        const all = Array.isArray(data) ? data : data?.data || [];
+        setPending(all.filter((c) => c.status === 'pending_approval'));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadPending(); }, []);
+
+  const resolutionLabel = (res) => {
+    if (res === 'refund') return 'Refund — 90% to customer, 10% commission';
+    if (res === 'rework') return 'Rework — rebook free, 80% provider, 20% commission';
+    if (res === 'resolve') return 'Resolve — complete work, provider paid';
+    return res;
+  };
+
+  const handleApprove = async (id) => {
+    if (!confirm('Approve this resolution? This will execute the financial action.')) return;
+    setActionId(id);
+    try {
+      await api.approveComplaint(id);
+      toast.success('Resolution approved and executed');
+      loadPending();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleReject = async (id) => {
+    if (!confirm('Reject this resolution? It will be sent back for review.')) return;
+    setActionId(id);
+    try {
+      await api.rejectComplaint(id);
+      toast.success('Resolution rejected, sent back for review');
+      loadPending();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <div>
+      <div className="dash-header">
+        <h1>Pending Approvals</h1>
+        <p>Review and approve area manager resolution decisions</p>
+      </div>
+
+      {pending.length === 0 ? (
+        <div className="empty-state">
+          <CheckCircle size={48} style={{ opacity: 0.4 }} />
+          <h3>No pending approvals</h3>
+          <p>All area manager resolutions have been processed.</p>
+        </div>
+      ) : (
+        <div className="bookings-list">
+          {pending.map((c) => (
+            <div key={c.id} className="booking-card card">
+              <div className="booking-card-header">
+                <div>
+                  <h3>{c.subject}</h3>
+                  <p className="booking-meta">
+                    #{c.id} · Booking: {String(c.booking_id).slice(0, 8)} · {new Date(c.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <StatusBadge status={c.status} />
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: 8 }}>
+                {c.description}
+              </p>
+              <div className="booking-detail" style={{ marginTop: 12 }}>
+                <span className="bd-label">Proposed Resolution</span>
+                <span className="bd-value" style={{ textTransform: 'capitalize' }}>{resolutionLabel(c.resolution)}</span>
+              </div>
+              {c.resolution_note && (
+                <div className="booking-detail" style={{ marginTop: 8 }}>
+                  <span className="bd-label">Note</span>
+                  <span className="bd-value">{c.resolution_note}</span>
+                </div>
+              )}
+              <div className="booking-card-actions" style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+                <button
+                  className="btn btn-success btn-sm"
+                  onClick={() => handleApprove(c.id)}
+                  disabled={actionId === c.id}
+                >
+                  {actionId === c.id ? 'Processing...' : 'Approve'}
+                </button>
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => handleReject(c.id)}
+                  disabled={actionId === c.id}
+                >
+                  {actionId === c.id ? 'Processing...' : 'Reject'}
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -560,6 +783,7 @@ export default function AdminDashboard() {
         <Route index element={<Overview />} />
         <Route path="users" element={<UsersManagement />} />
         <Route path="complaints" element={<ComplaintsManagement />} />
+        <Route path="pending-approvals" element={<PendingApprovals />} />
         <Route path="verifications" element={<Verifications />} />
         <Route path="provider-approvals" element={<ProviderApprovals />} />
         <Route path="add-area-manager" element={<AddAreaManager />} />
