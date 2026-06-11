@@ -557,6 +557,7 @@ html[data-theme="dark"] .services-grid-section::before {
   overflow: hidden;
   background-repeat: no-repeat;
   box-shadow: 0 2px 8px var(--color-shadow);
+  color: #ffffff;
 }
 
 .service-grid-card::before {
@@ -653,31 +654,32 @@ html[data-theme="dark"] .service-grid-card:hover {
 }
 
 .service-card-icon {
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.85);
   transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .service-grid-card:hover .service-card-icon {
   transform: rotate(45deg);
-  color: var(--card-accent, var(--color-blue));
+  color: #ffffff;
 }
 
 .service-card-name {
   font-size: 22px;
   font-weight: 700;
   margin-bottom: 8px;
-  color: var(--color-text-primary);
+  color: #ffffff;
   letter-spacing: -0.01em;
   transition: color 0.3s ease;
 }
 
 .service-grid-card:hover .service-card-name {
-  color: var(--card-accent, var(--color-blue));
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .service-card-desc {
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
   margin-bottom: 24px;
   max-width: 90%;

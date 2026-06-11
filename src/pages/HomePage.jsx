@@ -510,9 +510,7 @@ export default function HomePage() {
                     key={cat.id || idx} 
                     className={`service-grid-card ${currentBg}`}
                     style={{
-                      backgroundImage: `linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.40) 50%, rgba(255,255,255,0.60) 100%), url(${cardImg})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
+                      background: SERVICE_BG[idx] || 'var(--color-surface)',
                     }}
                   >
                     <div className="service-card-top">
