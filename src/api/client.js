@@ -360,6 +360,31 @@ class ApiClient {
   instantBook(data) {
     return this.post('/priyo/instant-book', data);
   }
+
+  // ──── Priyo Workshop (Favorites) ────
+  addFavoriteProvider(providerId) {
+    return this.post(`/priyo/favorite/${providerId}`);
+  }
+
+  removeFavoriteProvider(providerId) {
+    return this.delete(`/priyo/favorite/${providerId}`);
+  }
+
+  getFavoriteProviders() {
+    return this.get('/priyo/favorites');
+  }
+
+  getFavoriteLimits() {
+    return this.get('/priyo/favorites/limits');
+  }
+
+  checkFavoriteProvider(providerId) {
+    return this.get(`/priyo/check-favorite/${providerId}`);
+  }
+
+  getPriyoCustomers() {
+    return this.get('/priyo/customers');
+  }
 }
 
 const api = new ApiClient();

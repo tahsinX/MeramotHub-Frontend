@@ -585,6 +585,9 @@ function PriyoWorkshop() {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState(null);
+  const [bookingProvider, setBookingProvider] = useState(null);
+  const [providerServices, setProviderServices] = useState([]);
+  const [fetchingServices, setFetchingServices] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -610,11 +613,26 @@ function PriyoWorkshop() {
     try {
       await api.removeFavoriteProvider(providerId);
       setFavorites(prev => prev.filter(f => f.provider_id !== providerId));
-      toast.success('Removed from workshop');
+      toast.success('Removed from Priyo list');
     } catch (err) {
       toast.error(err.message);
     } finally {
       setRemoving(null);
+    }
+  };
+
+  const handleBookNow = async (fav) => {
+    setBookingProvider(fav);
+    setFetchingServices(true);
+    try {
+      const all = await api.getServiceItems();
+      const items = Array.isArray(all) ? all : all?.items || all?.data || [];
+      setProviderServices(items.filter(s => s.provider_id === fav.provider_id));
+    } catch (err) {
+      toast.error('Could not load services');
+      setProviderServices([]);
+    } finally {
+      setFetchingServices(false);
     }
   };
 
@@ -625,14 +643,15 @@ function PriyoWorkshop() {
       <div>
         <div className="dash-header">
           <h1>Priyo Workshop</h1>
-          <p>Save your favorite service providers for quick access</p>
+          <p>Save prioritized providers for auto-accepted bookings</p>
         </div>
         <div className="card" style={{ padding: 60, borderRadius: 20, textAlign: 'center' }}>
           <Crown size={48} style={{ color: '#f59e0b', marginBottom: 16 }} />
           <h3 style={{ marginBottom: 8 }}>Pro Feature</h3>
           <p style={{ color: 'var(--color-text-secondary)', maxWidth: 400, margin: '0 auto 24px', fontSize: 14 }}>
-            Priyo Workshop is available exclusively for Priyo Pro subscribers.
-            Subscribe now to save your favorite providers and access instant booking.
+            Priyo Workshop lets you mark providers as <strong>prioritized</strong>.
+            When you book a Priyo provider, your booking is <strong>automatically accepted</strong>.
+            Subscribe to Priyo Pro to unlock this feature.
           </p>
           <button className="btn btn-primary" onClick={() => navigate('/customer/subscription')}>
             <Sparkles size={16} /> Subscribe to Priyo Pro
@@ -646,7 +665,22 @@ function PriyoWorkshop() {
     <div>
       <div className="dash-header">
         <h1>Priyo Workshop</h1>
-        <p>Your saved favorite providers for quick rebooking</p>
+        <p>Your prioritized providers — booking them auto-accepts</p>
+      </div>
+
+      <div className="card" style={{
+        padding: '12px 20px', marginBottom: 24, borderRadius: 12,
+        background: '#fefce8', border: '1px solid #fde68a',
+        fontSize: 13, color: '#92400e', display: 'flex', alignItems: 'center', gap: 8,
+      }}>
+        <Crown size={16} style={{ color: '#f59e0b', flexShrink: 0 }} />
+        <span><strong>{favorites.length}/5</strong> Priyo slots used</span>
+        {favorites.length < 5 && (
+          <span>· {5 - favorites.length} slot{5 - favorites.length > 1 ? 's' : ''} remaining</span>
+        )}
+        {favorites.length >= 5 && (
+          <span style={{ color: '#dc2626' }}>· Remove one to add a different provider</span>
+        )}
       </div>
 
       {loading ? (
@@ -654,8 +688,8 @@ function PriyoWorkshop() {
       ) : favorites.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">❤️</div>
-          <h3>No saved providers yet</h3>
-          <p>Browse services and save your favorite providers to quickly rebook them later.</p>
+          <h3>No Priyo providers yet</h3>
+          <p>Browse services and save providers as Priyo (max 5, one per category). Booking a Priyo provider is automatically accepted.</p>
           <button className="btn btn-primary" onClick={() => navigate('/customer/ads')}>
             Browse Services
           </button>
@@ -672,7 +706,7 @@ function PriyoWorkshop() {
                       fontSize: 11, fontWeight: 600, color: '#f59e0b',
                       background: '#fefce8', padding: '2px 8px', borderRadius: 100,
                     }}>
-                      Priyo Pro
+                      Priyo
                     </span>
                   </h3>
                   <p className="booking-meta">
@@ -681,8 +715,17 @@ function PriyoWorkshop() {
                   </p>
                 </div>
               </div>
+              <div className="booking-card-body" style={{ border: 'none', paddingTop: 0 }}>
+                <div style={{ fontSize: 13, color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  ⚡ Booking this provider is automatically accepted
+                </div>
+              </div>
               <div className="booking-card-actions" style={{ border: 'none' }}>
                 <button className="btn btn-primary btn-sm"
+                  onClick={() => handleBookNow(fav)}>
+                  Book Now
+                </button>
+                <button className="btn btn-ghost btn-sm"
                   onClick={() => navigate(`/customer/messages/${fav.provider_id}`)}>
                   <MessageCircle size={16} /> Contact
                 </button>
@@ -694,6 +737,49 @@ function PriyoWorkshop() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Service picker modal */}
+      {bookingProvider && (
+        <div className="modal-overlay" onClick={() => { setBookingProvider(null); setProviderServices([]); }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div className="modal-header">
+              <h2>Select a Service</h2>
+              <button className="btn btn-ghost btn-icon" onClick={() => { setBookingProvider(null); setProviderServices([]); }}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', marginBottom: 16 }}>
+                Choose a service from <strong>{bookingProvider.provider_name}</strong> to book:
+              </p>
+              {fetchingServices ? (
+                <div className="loader"><div className="spinner" /></div>
+              ) : providerServices.length === 0 ? (
+                <p style={{ textAlign: 'center', padding: 24, color: 'var(--color-text-secondary)' }}>
+                  This provider has no available services.
+                </p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {providerServices.map(s => (
+                    <div key={s.id} className="card" style={{
+                      padding: 16, display: 'flex', justifyContent: 'space-between',
+                      alignItems: 'center', cursor: 'pointer',
+                    }} onClick={() => navigate(`/customer/book?service=${s.id}`)}>
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{s.name}</div>
+                        <div style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
+                          ৳{Number(s.base_price).toLocaleString()} / {s.unit}
+                        </div>
+                      </div>
+                      <button className="btn btn-primary btn-sm">Book</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -1097,6 +1183,11 @@ function BrowseServices() {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(true);
+  const [proStatus, setProStatus] = useState(null);
+  const [favorites, setFavorites] = useState(new Set());
+  const [favCategories, setFavCategories] = useState(new Set());
+  const [favCount, setFavCount] = useState(0);
+  const [favToggling, setFavToggling] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -1104,11 +1195,44 @@ function BrowseServices() {
     Promise.all([
       api.getServiceItems().then(d => Array.isArray(d) ? d : d?.items || d?.data || []).catch(() => []),
       api.getCategories().then(d => Array.isArray(d) ? d : d?.data || []).catch(() => []),
+      api.checkSubscription().then(d => { setProStatus(d.is_active); return d; }).catch(() => setProStatus(false)),
     ]).then(([items, cats]) => {
       setServices(items);
       setCategories(cats);
     }).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (proStatus) {
+      api.getFavoriteProviders()
+        .then(favs => {
+          const list = Array.isArray(favs) ? favs : [];
+          setFavorites(new Set(list.map(f => f.provider_id)));
+          setFavCategories(new Set(list.map(f => f.provider_skill).filter(Boolean)));
+          setFavCount(list.length);
+        })
+        .catch(() => {});
+    }
+  }, [proStatus]);
+
+  const toggleFavorite = async (providerId) => {
+    setFavToggling(providerId);
+    try {
+      if (favorites.has(providerId)) {
+        await api.removeFavoriteProvider(providerId);
+        setFavorites(prev => { const next = new Set(prev); next.delete(providerId); return next; });
+        toast.success('Removed from Priyo list');
+      } else {
+        await api.addFavoriteProvider(providerId);
+        setFavorites(prev => new Set(prev).add(providerId));
+        toast.success('Added to Priyo list — booking this provider auto-accepts');
+      }
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setFavToggling(null);
+    }
+  };
 
   const filtered = selectedCategory
     ? services.filter(s => String(s.category_id) === String(selectedCategory))
@@ -1122,6 +1246,18 @@ function BrowseServices() {
         <h1>Browse Services</h1>
         <p>Find the service you need and book instantly</p>
       </div>
+
+      {proStatus && (
+        <div style={{
+          background: '#fefce8', borderRadius: 12, padding: '12px 20px', marginBottom: 24,
+          border: '1px solid #fde68a', fontSize: 13, color: '#92400e', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+        }}>
+          <Crown size={16} style={{ color: '#f59e0b', flexShrink: 0 }} />
+          <span><strong>Priyo</strong> — booking auto-accepts · </span>
+          <span style={{ fontWeight: 600 }}>{favCount}/5 slots used</span>
+          {favCount >= 5 && <span style={{ color: '#dc2626' }}> (remove one first)</span>}
+        </div>
+      )}
 
       {categories.length > 0 && (
         <div className="form-group" style={{ maxWidth: 320, marginBottom: 32 }}>
@@ -1153,6 +1289,24 @@ function BrowseServices() {
                     <p className="booking-meta">{s.description}</p>
                   )}
                 </div>
+                {proStatus && s.provider_id && (
+                  <button
+                    onClick={() => toggleFavorite(s.provider_id)}
+                    disabled={favToggling === s.provider_id || (!favorites.has(s.provider_id) && favCategories.has(s.provider_skill))}
+                    style={{
+                      background: 'none', border: 'none', cursor: (!favorites.has(s.provider_id) && favCategories.has(s.provider_skill)) ? 'not-allowed' : 'pointer',
+                      color: favorites.has(s.provider_id) ? '#e11d48' : '#d1d5db',
+                      fontSize: 20, padding: '4px 8px', transition: 'color 0.15s', opacity: (!favorites.has(s.provider_id) && favCategories.has(s.provider_skill)) ? 0.3 : 1,
+                    }}
+                    title={
+                      favorites.has(s.provider_id) ? 'Remove from Priyo' :
+                      favCategories.has(s.provider_skill) ? `${s.provider_skill} category already taken` :
+                      'Save as Priyo'
+                    }
+                  >
+                    {favToggling === s.provider_id ? '...' : favorites.has(s.provider_id) ? '❤️' : '🤍'}
+                  </button>
+                )}
               </div>
               <div className="booking-card-body">
                 <div className="booking-detail">

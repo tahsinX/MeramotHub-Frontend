@@ -1056,6 +1056,7 @@ function PriyoCustomer() {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState([]);
+  const [priyoCustomers, setPriyoCustomers] = useState([]);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('bkash');
   const [transactionId, setTransactionId] = useState('');
@@ -1065,9 +1066,11 @@ function PriyoCustomer() {
     Promise.all([
       api.getSubscription().catch(() => null),
       api.getAssignedJobs().then(d => Array.isArray(d) ? d : d?.data || []).catch(() => []),
-    ]).then(([sub, j]) => {
+      api.getPriyoCustomers().then(d => Array.isArray(d) ? d : []).catch(() => []),
+    ]).then(([sub, j, cust]) => {
       setSubscription(sub);
       setJobs(j);
+      setPriyoCustomers(cust);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -1236,6 +1239,48 @@ function PriyoCustomer() {
             )}
           </div>
 
+          <div className="card" style={{ padding: 24, borderRadius: 16, marginBottom: 24 }}>
+            <h3 style={{ marginBottom: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Users size={18} style={{ color: '#f59e0b' }} /> Priyo Customers
+              <span style={{
+                fontSize: 11, fontWeight: 600, color: '#f59e0b', background: '#fefce8',
+                padding: '2px 10px', borderRadius: 100, marginLeft: 8,
+              }}>
+                Saved you as Priyo
+              </span>
+            </h3>
+            {priyoCustomers.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--color-text-secondary)', fontSize: 14 }}>
+                No Priyo customers yet. Pro customers who save you as a Priyo provider will appear here.
+              </div>
+            ) : (
+              <div className="table-wrapper">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Customer Name</th>
+                      <th>Saved Since</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {priyoCustomers.map((c) => (
+                      <tr key={c.id}>
+                        <td>{c.customer_name || 'Unknown'}</td>
+                        <td>{new Date(c.created_at).toLocaleDateString()}</td>
+                        <td>
+                          <button className="btn btn-ghost btn-sm"
+                            onClick={() => navigate(`/provider/messages/${c.customer_id}`)}>
+                            <MessageCircle size={14} /> Message
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </>
       )}
 
