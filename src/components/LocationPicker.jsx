@@ -18,6 +18,8 @@ const providerIcon = L.divIcon({
 });
 
 function haversineKm(lat1, lng1, lat2, lng2) {
+  lat1 = Number(lat1); lng1 = Number(lng1);
+  lat2 = Number(lat2); lng2 = Number(lng2);
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLng = (lng2 - lng1) * Math.PI / 180;
@@ -30,6 +32,11 @@ const API_BASE = 'http://127.0.0.1:8000';
 const distCache = new Map();
 
 async function roadDistanceKm(lat1, lng1, lat2, lng2) {
+  lat1 = Number(lat1); lng1 = Number(lng1);
+  lat2 = Number(lat2); lng2 = Number(lng2);
+  if (isNaN(lat1) || isNaN(lng1) || isNaN(lat2) || isNaN(lng2)) {
+    return { km: 0, method: 'straight' };
+  }
   const key = `${lat1.toFixed(5)},${lng1.toFixed(5)}-${lat2.toFixed(5)},${lng2.toFixed(5)}`;
   if (distCache.has(key)) return distCache.get(key);
   try {
@@ -86,8 +93,10 @@ export default function LocationPicker({
   const [distLoading, setDistLoading] = useState(false);
 
   const hasProvider = providerLat != null && providerLng != null;
-  const defaultCenter = initialLat && initialLng ? [initialLat, initialLng]
-    : hasProvider ? [providerLat, providerLng]
+  const pLat = hasProvider ? Number(providerLat) : null;
+  const pLng = hasProvider ? Number(providerLng) : null;
+  const defaultCenter = initialLat && initialLng ? [Number(initialLat), Number(initialLng)]
+    : hasProvider ? [pLat, pLng]
     : [23.8041, 90.4152];
   const defaultZoom = 12;
 
@@ -149,7 +158,7 @@ export default function LocationPicker({
   }, [userLat, userLng, providerLat, providerLng, hasProvider]);
 
   const polylinePositions = userLat != null && hasProvider
-    ? [[userLat, userLng], [providerLat, providerLng]]
+    ? [[userLat, userLng], [pLat, pLng]]
     : [];
 
   return (
@@ -224,7 +233,7 @@ export default function LocationPicker({
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {hasProvider && (
-            <Marker position={[providerLat, providerLng]} icon={providerIcon}>
+            <Marker position={[pLat, pLng]} icon={providerIcon}>
             </Marker>
           )}
           {userLat != null && userLng != null && (

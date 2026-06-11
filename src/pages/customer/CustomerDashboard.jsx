@@ -146,6 +146,7 @@ function Overview() {
 
 /* ── Bookings ── */
 function MyBookings() {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [payments, setPayments] = useState({});
   const [loading, setLoading] = useState(true);

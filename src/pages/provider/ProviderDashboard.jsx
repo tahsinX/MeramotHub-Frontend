@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, DollarSign, PlusCircle, X,
-  Star, CheckCircle, Clock, XCircle, ToggleLeft, ToggleRight, User, MessageCircle
+  Star, CheckCircle, Clock, XCircle, ToggleLeft, ToggleRight, MessageCircle
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
@@ -162,6 +162,7 @@ function MyJobs() {
   const handleAction = async (id, action) => {
     try {
       if (action === 'accept') await api.acceptBooking(id);
+      else if (action === 'reject') await api.patch(`/bookings/${id}/reject`);
       else if (action === 'start') await api.startBooking(id);
       else if (action === 'complete') await api.completeBooking(id);
       toast.success(`Job ${action}ed!`);
@@ -201,9 +202,14 @@ function MyJobs() {
               </div>
               <div className="booking-card-actions">
                 {b.status === 'pending' && (
-                  <button className="btn btn-primary btn-sm" onClick={() => handleAction(b.id, 'accept')}>
-                    <CheckCircle size={16} /> Accept
-                  </button>
+                  <>
+                    <button className="btn btn-primary btn-sm" onClick={() => handleAction(b.id, 'accept')}>
+                      <CheckCircle size={16} /> Accept
+                    </button>
+                    <button className="btn btn-danger btn-sm" onClick={() => handleAction(b.id, 'reject')}>
+                      <XCircle size={16} /> Reject
+                    </button>
+                  </>
                 )}
                 {b.status === 'accepted' && (
                   <button className="btn btn-primary btn-sm" onClick={() => handleAction(b.id, 'start')}>
@@ -263,15 +269,15 @@ function Earnings() {
         <div className="stat-card">
           <div className="stat-icon amber"><Clock size={24} /></div>
           <div className="stat-info">
-            <h3>৳{dashboard?.pending_amount ? Number(dashboard.pending_amount).toLocaleString() : '0'}</h3>
-            <p>Pending</p>
+            <h3>৳{dashboard?.pending_release ? Number(dashboard.pending_release).toLocaleString() : '0'}</h3>
+            <p>Pending Release</p>
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-icon red"><XCircle size={24} /></div>
           <div className="stat-info">
-            <h3>৳{dashboard?.commission_total ? Number(dashboard.commission_total).toLocaleString() : '0'}</h3>
-            <p>Commission Paid</p>
+            <h3>৳{dashboard?.total_refunded ? Number(dashboard.total_refunded).toLocaleString() : '0'}</h3>
+            <p>Refunded</p>
           </div>
         </div>
       </div>
