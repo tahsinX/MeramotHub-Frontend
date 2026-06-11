@@ -302,3 +302,51 @@
     font-size: 1.75rem;
   }
 }
+
+/* ── Payment Method Grid ── */
+.payment-method-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.payment-method-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+
+.payment-method-card:hover {
+  border-color: var(--color-blue);
+  background: rgba(37, 99, 235, 0.03);
+}
+
+.payment-method-card.selected {
+  border-color: var(--color-blue);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.payment-method-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.payment-method-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 480px) {
+  .payment-method-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

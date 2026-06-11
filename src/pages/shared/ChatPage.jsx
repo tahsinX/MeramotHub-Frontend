@@ -5,6 +5,14 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 
+const CATEGORY_LABELS = {
+  electrician: 'Electrician',
+  plumber: 'Plumber',
+  ac_mechanic: 'AC Mechanic',
+  carpenter: 'Carpenter',
+  painter: 'Painter',
+};
+
 export default function ChatPage() {
   const { user: currentUser, isCustomer, isProvider } = useAuth();
   const { userId: routeUserId } = useParams();
@@ -155,6 +163,14 @@ export default function ChatPage() {
                       </span>
                     )}
                   </div>
+                  {conv.user.skill_category && (
+                    <span style={{
+                      fontSize: '0.75rem', color: 'var(--color-blue)', fontWeight: 500,
+                      display: 'block', marginTop: 1,
+                    }}>
+                      {CATEGORY_LABELS[conv.user.skill_category] || conv.user.skill_category}
+                    </span>
+                  )}
                   <span style={{
                     fontSize: '0.8rem', color: 'var(--color-text-secondary)',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -192,12 +208,14 @@ export default function ChatPage() {
               }}>
                 {selectedUser.full_name?.charAt(0)?.toUpperCase()}
               </div>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{selectedUser.full_name}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', textTransform: 'capitalize' }}>
-                  {selectedUser.role?.replace('_', ' ')}
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{selectedUser.full_name}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+                    {selectedUser.skill_category
+                      ? CATEGORY_LABELS[selectedUser.skill_category] || selectedUser.skill_category
+                      : selectedUser.role?.replace('_', ' ')}
+                  </div>
                 </div>
-              </div>
             </div>
 
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>

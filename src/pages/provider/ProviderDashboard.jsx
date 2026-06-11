@@ -107,6 +107,40 @@ function Overview() {
           <div className="stat-info"><h3>{stats.completed}</h3><p>Completed</p></div>
         </div>
       </div>
+
+      <div className="dash-section">
+        <h2>Recent Jobs</h2>
+        {jobs.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">📋</div>
+            <h3>No jobs yet</h3>
+            <p>New bookings will appear here once customers book your services</p>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Status</th>
+                  <th>Price</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {jobs.slice(0, 5).map((b) => (
+                  <tr key={b.id}>
+                    <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{b.id?.slice(0, 8)}...</td>
+                    <td><StatusBadge status={b.status} /></td>
+                    <td>৳{Number(b.total_price).toLocaleString()}</td>
+                    <td>{new Date(b.created_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -201,7 +235,7 @@ function Earnings() {
 
   useEffect(() => {
     Promise.all([
-      api.getPaymentDashboard().catch(() => null),
+      api.getProviderEarningsSummary().catch(() => null),
       api.getMyEarnings().then(d => Array.isArray(d) ? d : d?.data || []).catch(() => []),
     ]).then(([d, e]) => {
       setDashboard(d);

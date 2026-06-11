@@ -290,6 +290,21 @@ input, textarea, select {
   color: #FFFFFF;
 }
 
+.btn-danger {
+  background-color: var(--danger);
+  color: #FFFFFF;
+}
+
+.btn-success {
+  background-color: var(--success);
+  color: #FFFFFF;
+}
+
+.btn-warning {
+  background-color: var(--warning);
+  color: #FFFFFF;
+}
+
 .btn-outline {
   background-color: transparent;
   border: 1px solid var(--color-blue);

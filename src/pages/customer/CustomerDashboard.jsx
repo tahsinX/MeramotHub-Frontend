@@ -145,6 +145,7 @@ function Overview() {
 /* ── Bookings ── */
 function MyBookings() {
   const [bookings, setBookings] = useState([]);
+  const [payments, setPayments] = useState({});
   const [loading, setLoading] = useState(true);
   const [reviewTarget, setReviewTarget] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
@@ -153,10 +154,15 @@ function MyBookings() {
   const [complaintForm, setComplaintForm] = useState({ subject: '', description: '' });
 
   const loadBookings = () => {
-    api.getMyBookings()
-      .then((data) => setBookings(Array.isArray(data) ? data : data?.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    Promise.all([
+      api.getMyBookings().then(d => Array.isArray(d) ? d : d?.data || []).catch(() => []),
+      api.getMyPayments().then(d => Array.isArray(d) ? d : d?.data || []).catch(() => []),
+    ]).then(([b, p]) => {
+      setBookings(b);
+      const pmap = {};
+      p.forEach(pay => { pmap[pay.booking_id] = pay; });
+      setPayments(pmap);
+    }).finally(() => setLoading(false));
   };
 
   useEffect(() => { loadBookings(); }, []);
@@ -265,6 +271,19 @@ function MyBookings() {
                   <div className="booking-detail">
                     <span className="bd-label">Provider</span>
                     <span className="bd-value">{b.provider_name}</span>
+                  </div>
+                )}
+                {payments[b.id] && (
+                  <div className="booking-detail">
+                    <span className="bd-label">Payment</span>
+                    <span className="bd-value">
+                      <StatusBadge status={payments[b.id].status} />
+                      {payments[b.id].status === 'refunded' && (
+                        <span style={{ marginLeft: 8, fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                          Refunded to your account
+                        </span>
+                      )}
+                    </span>
                   </div>
                 )}
               </div>
@@ -572,6 +591,13 @@ function PriyoWorkshop() {
 }
 
 /* ── Book Service ── */
+const PAYMENT_METHODS = [
+  { id: 'bkash', label: 'bKash', icon: '💳' },
+  { id: 'nagad', label: 'Nagad', icon: '📱' },
+  { id: 'card', label: 'Card', icon: '💳' },
+  { id: 'bank', label: 'Bank', icon: '🏦' },
+];
+
 function BookService() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -586,6 +612,16 @@ function BookService() {
   const [notes, setNotes] = useState('');
   const [locationLat, setLocationLat] = useState(null);
   const [locationLng, setLocationLng] = useState(null);
+
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [transactionId, setTransactionId] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
 
   useEffect(() => {
     if (!serviceId) {
@@ -606,29 +642,78 @@ function BookService() {
     setAddress(addr);
   };
 
-  const handleSubmit = async (e) => {
+  const handleProceedToPayment = (e) => {
     e.preventDefault();
     if (!serviceId || !address || !scheduledAt) {
       toast.error('Please fill in all required fields');
       return;
     }
+    setShowPayment(true);
+  };
+
+  const validatePaymentFields = () => {
+    if (!paymentMethod) {
+      toast.error('Please select a payment method');
+      return false;
+    }
+    if (!transactionId.trim()) {
+      toast.error('Please enter the transaction reference ID');
+      return false;
+    }
+    if (paymentMethod === 'bkash' || paymentMethod === 'nagad') {
+      if (!phoneNumber.trim()) {
+        toast.error('Please enter your phone number');
+        return false;
+      }
+    }
+    if (paymentMethod === 'card') {
+      if (!cardNumber.trim() || !cardExpiry.trim() || !cardCvv.trim()) {
+        toast.error('Please fill in all card details');
+        return false;
+      }
+    }
+    if (paymentMethod === 'bank') {
+      if (!bankName.trim() || !accountNumber.trim()) {
+        toast.error('Please fill in bank name and account number');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handlePayAndBook = async () => {
+    if (!validatePaymentFields()) return;
     setSubmitting(true);
     try {
-      await api.createBooking({
+      await api.payAndBook({
         service_item_id: Number(serviceId),
         address,
         latitude: locationLat,
         longitude: locationLng,
         scheduled_at: new Date(scheduledAt).toISOString(),
         notes: notes || undefined,
+        payment_method: paymentMethod,
+        mfs_transaction_id: transactionId.trim(),
       });
-      toast.success('Booking created successfully!');
+      toast.success('Booking created and payment received!');
       navigate('/customer/bookings');
     } catch (err) {
       toast.error(err.message);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const resetPaymentState = () => {
+    setPaymentMethod('');
+    setTransactionId('');
+    setPhoneNumber('');
+    setCardNumber('');
+    setCardExpiry('');
+    setCardCvv('');
+    setBankName('');
+    setAccountNumber('');
+    setShowPayment(false);
   };
 
   if (!serviceId) {
@@ -680,7 +765,7 @@ function BookService() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="booking-form card" style={{ padding: 32 }}>
+      <form onSubmit={handleProceedToPayment} className="booking-form card" style={{ padding: 32 }}>
         <LocationPicker
           providerLat={service?.provider_latitude}
           providerLng={service?.provider_longitude}
@@ -711,11 +796,187 @@ function BookService() {
         </div>
 
         <div className="form-actions" style={{ marginTop: 32 }}>
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
-            {submitting ? 'Booking...' : 'Confirm Booking'}
+          <button type="submit" className="btn btn-primary">
+            Proceed to Pay — ৳{service ? Number(service.base_price).toLocaleString() : ''}
           </button>
         </div>
       </form>
+
+      {showPayment && (
+        <div className="modal-overlay" onClick={() => !submitting && resetPaymentState()}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
+            <div className="modal-header">
+              <h2>Complete Payment</h2>
+              <button className="btn btn-ghost btn-sm" onClick={resetPaymentState} disabled={submitting}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="card" style={{ padding: 16, marginBottom: 24, background: 'var(--color-bg-secondary)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h4 style={{ marginBottom: 4 }}>{service?.name}</h4>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                    {service?.provider_name}
+                  </p>
+                </div>
+                <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                  ৳{service ? Number(service.base_price).toLocaleString() : ''}
+                </p>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <label className="form-label">Select Payment Method *</label>
+              <div className="payment-method-grid">
+                {PAYMENT_METHODS.map((m) => (
+                  <button
+                    key={m.id}
+                    className={`payment-method-card ${paymentMethod === m.id ? 'selected' : ''}`}
+                    onClick={() => setPaymentMethod(m.id)}
+                    disabled={submitting}
+                    type="button"
+                  >
+                    <span className="payment-method-icon">{m.icon}</span>
+                    <span className="payment-method-label">{m.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {paymentMethod && (
+              <div className="payment-details" style={{ marginBottom: 24 }}>
+                {(paymentMethod === 'bkash' || paymentMethod === 'nagad') && (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">
+                        {paymentMethod === 'bkash' ? 'bKash' : 'Nagad'} Phone Number *
+                      </label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. 01XXXXXXXXX"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Transaction ID *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder={`Enter ${paymentMethod === 'bkash' ? 'bKash' : 'Nagad'} transaction ID`}
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value)}
+                        disabled={submitting}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {paymentMethod === 'card' && (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">Card Number *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="XXXX XXXX XXXX XXXX"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <label className="form-label">Expiry *</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="MM/YY"
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(e.target.value)}
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <label className="form-label">CVV *</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          placeholder="***"
+                          value={cardCvv}
+                          onChange={(e) => setCardCvv(e.target.value)}
+                          disabled={submitting}
+                        />
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Transaction Reference</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Gateway transaction ID (if available)"
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value)}
+                        disabled={submitting}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {paymentMethod === 'bank' && (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">Bank Name *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Dutch-Bangla Bank"
+                        value={bankName}
+                        onChange={(e) => setBankName(e.target.value)}
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Account Number *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Enter your account number"
+                        value={accountNumber}
+                        onChange={(e) => setAccountNumber(e.target.value)}
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Transaction ID *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Bank transaction / reference ID"
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value)}
+                        disabled={submitting}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            <div className="form-actions" style={{ borderTop: '1px solid var(--color-border)', paddingTop: 24 }}>
+              <button className="btn btn-ghost" onClick={resetPaymentState} disabled={submitting}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={handlePayAndBook} disabled={submitting || !paymentMethod}>
+                {submitting ? 'Processing...' : `Pay ৳${service ? Number(service.base_price).toLocaleString() : ''}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -862,6 +1123,8 @@ export default function CustomerDashboard() {
           <Route path="ads" element={<BrowseServices />} />
           <Route path="priyo" element={<PriyoWorkshop />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="messages" element={<ChatPage />} />
+          <Route path="messages/:userId" element={<ChatPage />} />
           <Route path="*" element={<Navigate to="/customer" replace />} />
         </Routes>
       </DashboardLayout>
