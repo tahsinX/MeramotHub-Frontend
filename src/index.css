@@ -699,6 +699,42 @@ input, textarea, select {
   .profile-page { padding: 20px 12px; }
 }
 
+/* Prevent children from overflowing the card */
+.card {
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.card img,
+.card svg,
+.card video,
+.card iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.card .form-input,
+.card .form-textarea,
+.card .form-select,
+.card label,
+.card .sidebar-avatar {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Force long words / addresses to wrap inside inputs and labels */
+.card,
+.card * {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Keep avatar inside card bounds */
+.card .sidebar-avatar {
+  flex-shrink: 0;
+}
+
 ::-webkit-scrollbar-track {
   background: var(--color-bg);
 }
