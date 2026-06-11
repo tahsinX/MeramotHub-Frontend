@@ -131,7 +131,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div>
+    <div className="profile-page">
       <div className="dash-header">
         <h1>My Profile</h1>
         <p>Manage your personal information</p>
