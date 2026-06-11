@@ -5,6 +5,14 @@ import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import './HomePage.css';
 
+import imgElectrician from '../assets/card-electrician.jpg';
+import imgPlumber from '../assets/card-plumber.jpg';
+import imgAc from '../assets/card-ac.jpg';
+import imgCarpenter from '../assets/card-carpenter.jpg';
+import imgPainter from '../assets/card-painter.jpg';
+
+const CARD_IMAGES = [imgElectrician, imgPlumber, imgAc, imgCarpenter, imgPainter];
+
 const STATIC_CATEGORIES = [
   { name: 'Electrical Services', desc: 'High-precision fan, light, and power wiring diagnostics.', id: 'electrician' },
   { name: 'Plumbing Services', desc: 'Expert pipe repairs, leak preventions, and fixture fittings.', id: 'plumber' },
@@ -12,6 +20,20 @@ const STATIC_CATEGORIES = [
   { name: 'Carpentry Services', desc: 'Fine wood repairs, premium doors, and cabinet restorations.', id: 'carpenter' },
   { name: 'Painting Services', desc: 'Premium interior finishes and flawless waterproofing layers.', id: 'painter' },
 ];
+
+const SERVICE_BG = [
+  'linear-gradient(135deg, #0a1628 0%, #1a3a6b 50%, #2563eb 100%)',
+  'linear-gradient(135deg, #0a2e2e 0%, #0f766e 50%, #14b8a6 100%)',
+  'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #3b82f6 100%)',
+  'linear-gradient(135deg, #2a1708 0%, #78350f 50%, #d97706 100%)',
+  'linear-gradient(135deg, #1a0533 0%, #4c1d95 50%, #8b5cf6 100%)',
+];
+
+const PROVIDER_AVATARS = {
+  tanvir: 'https://i.pravatar.cc/80?u=tanvir',
+  kamil: 'https://i.pravatar.cc/80?u=kamil',
+  imran: 'https://i.pravatar.cc/80?u=imran',
+};
 
 const PROCESS_STEPS = [
   {
@@ -302,9 +324,7 @@ export default function HomePage() {
                     <span className="status-text">Available</span>
                   </div>
                   <div className="card-body-row">
-                    <div className="provider-icon bg-blue-subtle">
-                      <Wrench size={16} className="text-blue" />
-                    </div>
+                    <img src={PROVIDER_AVATARS.tanvir} alt="Tanvir Rahman" className="provider-avatar" loading="lazy" />
                     <div>
                       <h4 className="provider-name">Tanvir Rahman</h4>
                       <p className="provider-spec">Certified Electrician</p>
@@ -326,9 +346,7 @@ export default function HomePage() {
                     <span className="status-text">On Duty</span>
                   </div>
                   <div className="card-body-row">
-                    <div className="provider-icon bg-gold-subtle">
-                      <Wrench size={16} className="text-gold" />
-                    </div>
+                    <img src={PROVIDER_AVATARS.kamil} alt="Kamil Khan" className="provider-avatar" loading="lazy" />
                     <div>
                       <h4 className="provider-name">Kamil Khan</h4>
                       <p className="provider-spec">Plumbing Specialist</p>
@@ -350,9 +368,7 @@ export default function HomePage() {
                     <span className="status-text">Available</span>
                   </div>
                   <div className="card-body-row">
-                    <div className="provider-icon bg-navy-subtle">
-                      <Wrench size={16} className="text-navy" />
-                    </div>
+                    <img src={PROVIDER_AVATARS.imran} alt="Imran Hosein" className="provider-avatar" loading="lazy" />
                     <div>
                       <h4 className="provider-name">Imran Hosein</h4>
                       <p className="provider-spec">AC Diagnostics Expert</p>
@@ -477,7 +493,7 @@ export default function HomePage() {
             </div>
 
             <div className="services-asymmetric-grid reveal">
-              {displayCategories.slice(0, 5).map((cat, idx) => {
+                {displayCategories.slice(0, 5).map((cat, idx) => {
                 const bgColors = [
                   'service-bg-electrician',
                   'service-bg-plumber',
@@ -486,12 +502,18 @@ export default function HomePage() {
                   'service-bg-painting'
                 ];
                 const currentBg = bgColors[idx] || 'service-bg-default';
+                const cardImg = CARD_IMAGES[idx];
                 
                 return (
                   <Link 
                     to={cat.id ? `/services?category=${cat.id}` : '/services'} 
                     key={cat.id || idx} 
                     className={`service-grid-card ${currentBg}`}
+                    style={{
+                      backgroundImage: `linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.40) 50%, rgba(255,255,255,0.60) 100%), url(${cardImg})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
                   >
                     <div className="service-card-top">
                       <span className="service-num">0{idx + 1}</span>
