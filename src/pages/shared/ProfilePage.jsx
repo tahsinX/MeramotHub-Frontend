@@ -137,14 +137,14 @@ export default function ProfilePage() {
         <p>Manage your personal information</p>
       </div>
 
-      <div className="card" style={{ maxWidth: 560, padding: 'var(--space-xl)' }}>
+      <div className="card" style={{ padding: 'var(--space-xl)' }}>
         <form onSubmit={handleSave}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 'var(--space-xl)' }}>
-            <div className="sidebar-avatar" style={{ width: 56, height: 56, fontSize: '1.4rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: 'var(--space-xl)' }}>
+            <div className="sidebar-avatar" style={{ width: 80, height: 80, fontSize: '2rem' }}>
               {user?.full_name?.charAt(0)?.toUpperCase()}
             </div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{user?.full_name}</div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: 4 }}>{user?.full_name}</div>
               <span className={`badge badge-neutral`}>{roleMap[user?.role] || user?.role}</span>
             </div>
           </div>
