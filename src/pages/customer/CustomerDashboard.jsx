@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, CalendarCheck, Star, AlertTriangle, X,
-  MessageCircle, Heart, Clock, CheckCircle, XCircle, Megaphone, ThumbsUp
+  MessageCircle, Heart, Clock, CheckCircle, XCircle, Megaphone, ThumbsUp, Crown, Sparkles
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import LocationPicker from '../../components/LocationPicker';
@@ -10,6 +10,7 @@ import api from '../../api/client';
 import toast from 'react-hot-toast';
 import ProfilePage from '../shared/ProfilePage';
 import ChatPage from '../shared/ChatPage';
+import SubscriptionPage from '../shared/SubscriptionPage';
 import './CustomerDashboard.css';
 
 const NAV_ITEMS = [
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
       { name: 'Browse Services', path: '/customer/ads', icon: <Megaphone size={18} /> },
       
       { name: 'Priyo Workshop', path: '/customer/priyo', icon: <Heart size={18} /> },
+      { name: 'Subscription', path: '/customer/subscription', icon: <Crown size={18} /> },
     ],
   },
 
@@ -578,17 +580,122 @@ function ChatBot() {
 
 /* ── Priyo ── */
 function PriyoWorkshop() {
+  const [proStatus, setProStatus] = useState(null);
+  const [checking, setChecking] = useState(true);
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [removing, setRemoving] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    api.checkSubscription()
+      .then(data => setProStatus(data.is_active))
+      .catch(() => setProStatus(false))
+      .finally(() => setChecking(false));
+  }, []);
+
+  useEffect(() => {
+    if (proStatus) {
+      api.getFavoriteProviders()
+        .then(d => setFavorites(Array.isArray(d) ? d : []))
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [proStatus]);
+
+  const handleRemove = async (providerId) => {
+    setRemoving(providerId);
+    try {
+      await api.removeFavoriteProvider(providerId);
+      setFavorites(prev => prev.filter(f => f.provider_id !== providerId));
+      toast.success('Removed from workshop');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setRemoving(null);
+    }
+  };
+
+  if (checking) return null;
+
+  if (!proStatus) {
+    return (
+      <div>
+        <div className="dash-header">
+          <h1>Priyo Workshop</h1>
+          <p>Save your favorite service providers for quick access</p>
+        </div>
+        <div className="card" style={{ padding: 60, borderRadius: 20, textAlign: 'center' }}>
+          <Crown size={48} style={{ color: '#f59e0b', marginBottom: 16 }} />
+          <h3 style={{ marginBottom: 8 }}>Pro Feature</h3>
+          <p style={{ color: 'var(--color-text-secondary)', maxWidth: 400, margin: '0 auto 24px', fontSize: 14 }}>
+            Priyo Workshop is available exclusively for Priyo Pro subscribers.
+            Subscribe now to save your favorite providers and access instant booking.
+          </p>
+          <button className="btn btn-primary" onClick={() => navigate('/customer/subscription')}>
+            <Sparkles size={16} /> Subscribe to Priyo Pro
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="dash-header">
         <h1>Priyo Workshop</h1>
-        <p>Save your favorite service providers for quick access</p>
+        <p>Your saved favorite providers for quick rebooking</p>
       </div>
-      <div className="empty-state">
-        <div className="empty-state-icon">❤️</div>
-        <h3>Coming Soon</h3>
-        <p>Use instant booking to find Priyo-subscribed providers near you</p>
-      </div>
+
+      {loading ? (
+        <div className="loader"><div className="spinner" /></div>
+      ) : favorites.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">❤️</div>
+          <h3>No saved providers yet</h3>
+          <p>Browse services and save your favorite providers to quickly rebook them later.</p>
+          <button className="btn btn-primary" onClick={() => navigate('/customer/ads')}>
+            Browse Services
+          </button>
+        </div>
+      ) : (
+        <div className="bookings-list">
+          {favorites.map((fav) => (
+            <div key={fav.id} className="booking-card card">
+              <div className="booking-card-header" style={{ border: 'none', paddingBottom: 0 }}>
+                <div>
+                  <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {fav.provider_name || 'Unknown Provider'}
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, color: '#f59e0b',
+                      background: '#fefce8', padding: '2px 8px', borderRadius: 100,
+                    }}>
+                      Priyo Pro
+                    </span>
+                  </h3>
+                  <p className="booking-meta">
+                    {fav.provider_skill && `${fav.provider_skill} · `}
+                    {fav.provider_area || 'No location'}
+                  </p>
+                </div>
+              </div>
+              <div className="booking-card-actions" style={{ border: 'none' }}>
+                <button className="btn btn-primary btn-sm"
+                  onClick={() => navigate(`/customer/messages/${fav.provider_id}`)}>
+                  <MessageCircle size={16} /> Contact
+                </button>
+                <button className="btn btn-ghost btn-sm"
+                  onClick={() => handleRemove(fav.provider_id)}
+                  disabled={removing === fav.provider_id}>
+                  {removing === fav.provider_id ? '...' : 'Remove'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -1125,6 +1232,7 @@ export default function CustomerDashboard() {
           <Route path="book" element={<BookService />} />
           <Route path="ads" element={<BrowseServices />} />
           <Route path="priyo" element={<PriyoWorkshop />} />
+          <Route path="subscription" element={<SubscriptionPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="messages" element={<ChatPage />} />
           <Route path="messages/:userId" element={<ChatPage />} />

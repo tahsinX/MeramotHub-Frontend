@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Briefcase, DollarSign, PlusCircle, X,
-  Star, CheckCircle, Clock, XCircle, ToggleLeft, ToggleRight, MessageCircle
+  LayoutDashboard, Briefcase, DollarSign, PlusCircle, Crown, X,
+  Star, CheckCircle, Clock, XCircle, ToggleLeft, ToggleRight, MessageCircle,
+  Users, Sparkles, Zap, ShieldCheck
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
@@ -10,6 +11,7 @@ import api from '../../api/client';
 import toast from 'react-hot-toast';
 import ProfilePage from '../shared/ProfilePage';
 import ChatPage from '../shared/ChatPage';
+import SubscriptionPage from '../shared/SubscriptionPage';
 import LocationPicker from '../../components/LocationPicker';
 import '../customer/CustomerDashboard.css';
 
@@ -27,6 +29,13 @@ const NAV_ITEMS = [
     label: 'Communication',
     items: [
       { name: 'Messages', path: '/provider/messages', icon: <MessageCircle size={18} /> },
+    ],
+  },
+  {
+    label: 'Priyo',
+    items: [
+      { name: 'Priyo Customer', path: '/provider/priyo', icon: <Users size={18} /> },
+      { name: 'Subscription', path: '/provider/subscription', icon: <Crown size={18} /> },
     ],
   },
 ];
@@ -821,15 +830,25 @@ function ProviderOnboarding() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    
+    if (!form.full_name.trim()) { toast.error('Full name is required'); return; }
+    if (!form.phone_number.trim()) { toast.error('Phone number is required'); return; }
+    if (!form.email.trim()) { toast.error('Email is required'); return; }
+    if (!form.nid_number.trim()) { toast.error('NID number is required'); return; }
+    if (!nidImageUrl) { toast.error('NID image is required — upload your NID image'); return; }
+    if (!form.area.trim()) { toast.error('Service area is required — select your location on the map'); return; }
+    if (!form.bio.trim()) { toast.error('Bio is required'); return; }
+    if (!form.experience_years || Number(form.experience_years) < 1) { toast.error('Experience years must be at least 1'); return; }
+    
     setCreating(true);
     try {
       const profilePayload = {
         nid_number: form.nid_number,
         skill_category: form.skill_category,
         experience_years: Number(form.experience_years),
-        bio: form.bio || undefined,
+        bio: form.bio,
         area: form.area,
-        nid_image_url: nidImageUrl || undefined,
+        nid_image_url: nidImageUrl,
       };
 
       if (!profile) {
@@ -900,9 +919,9 @@ function ProviderOnboarding() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Email <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span></label>
+            <label className="form-label">Email</label>
             <input type="email" className="form-input" placeholder="your@email.com" value={form.email}
-              onChange={e => handleChange('email', e.target.value)} />
+              onChange={e => handleChange('email', e.target.value)} required />
           </div>
 
           <hr style={{ margin: '24px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
@@ -917,7 +936,7 @@ function ProviderOnboarding() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">NID Image</label>
+            <label className="form-label">NID Image <span style={{color:'var(--color-danger)'}}>*</span></label>
             {nidImageUrl ? (
               <div style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', gap: 12, background: '#fff' }}>
                 <div style={{ width: 48, height: 48, borderRadius: 8, background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -972,15 +991,15 @@ function ProviderOnboarding() {
             </div>
             <div className="form-group">
               <label className="form-label">Experience (years)</label>
-              <input type="number" className="form-input" min="0" value={form.experience_years}
-                onChange={e => handleChange('experience_years', parseInt(e.target.value) || 0)} />
+              <input type="number" className="form-input" min="1" value={form.experience_years}
+                onChange={e => handleChange('experience_years', parseInt(e.target.value) || 0)} required />
             </div>
           </div>
 
           <div className="form-group">
-            <label className="form-label">Bio</label>
+            <label className="form-label">Bio <span style={{color:'var(--color-danger)'}}>*</span></label>
             <textarea className="form-textarea" placeholder="Tell customers about yourself..." rows={3} value={form.bio}
-              onChange={e => handleChange('bio', e.target.value)} />
+              onChange={e => handleChange('bio', e.target.value)} required />
           </div>
 
           <hr style={{ margin: '24px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
@@ -1031,6 +1050,283 @@ function PendingApproval() {
   );
 }
 
+/* ── Priyo Customer (Provider Side) ── */
+function PriyoCustomer() {
+  const navigate = useNavigate();
+  const [subscription, setSubscription] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [jobs, setJobs] = useState([]);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('bkash');
+  const [transactionId, setTransactionId] = useState('');
+  const [subscribing, setSubscribing] = useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      api.getSubscription().catch(() => null),
+      api.getAssignedJobs().then(d => Array.isArray(d) ? d : d?.data || []).catch(() => []),
+    ]).then(([sub, j]) => {
+      setSubscription(sub);
+      setJobs(j);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  const isProActive = subscription?.is_active;
+  const instantBookings = jobs.filter(j => j.booking_type === 'instant');
+
+  const handlePayAndSubscribe = async () => {
+    if (!transactionId.trim()) {
+      toast.error('Please enter your MFS transaction ID');
+      return;
+    }
+    setSubscribing(true);
+    try {
+      const res = await api.subscribePriyo('priyo_basic', transactionId.trim());
+      setSubscription(res);
+      setShowPayment(false);
+      toast.success('Subscribed to Priyo Pro!');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
+  const handleUnsubscribe = async () => {
+    setSubscribing(true);
+    try {
+      await api.unsubscribePriyo();
+      setSubscription(null);
+      toast.success('Unsubscribed successfully');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
+  if (loading) return <div className="loader"><div className="spinner" /></div>;
+
+  return (
+    <div>
+      <div className="dash-header">
+        <h1>Priyo Customer</h1>
+        <p>Manage your Priyo subscription and connect with more customers</p>
+      </div>
+
+      {isProActive ? (
+        <div className="card" style={{
+          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+          borderRadius: 16, padding: '24px 32px', marginBottom: 24,
+          color: '#fff',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <Crown size={28} />
+            <div>
+              <strong style={{ fontSize: 18 }}>Priyo Pro Active</strong>
+              <div style={{ fontSize: 13, opacity: 0.85 }}>
+                {subscription.plan_name} · Expires {new Date(subscription.expires_at).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
+          <p style={{ fontSize: 14, opacity: 0.9, marginBottom: 12 }}>
+            You are eligible for instant booking assignments and priority visibility.
+          </p>
+          <button className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)' }}
+            onClick={handleUnsubscribe} disabled={subscribing}>
+            {subscribing ? '...' : 'Cancel Subscription'}
+          </button>
+        </div>
+      ) : subscription && !isProActive ? (
+        <div className="card" style={{
+          background: '#fef2f2', borderRadius: 16, padding: '24px 32px', marginBottom: 24,
+          color: '#991b1b', border: '1px solid #fecaca',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <X size={20} />
+            <strong>Subscription Expired</strong>
+          </div>
+          <p style={{ fontSize: 14, opacity: 0.85 }}>
+            Your Priyo subscription expired. Renew to continue receiving priority benefits.
+          </p>
+        </div>
+      ) : (
+        <div className="card" style={{
+          background: 'linear-gradient(135deg, #fefce8, #fef3c7)',
+          borderRadius: 16, padding: '24px 32px', marginBottom: 24,
+          border: '1px solid #fde68a', color: '#92400e',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <Crown size={24} style={{ color: '#f59e0b' }} />
+            <strong style={{ fontSize: 16 }}>Go Priyo Pro</strong>
+          </div>
+          <p style={{ fontSize: 14, opacity: 0.85, marginBottom: 16 }}>
+            Subscribe to Priyo Pro for ৳500/month and get priority customer assignments, instant booking eligibility, and more.
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-primary" onClick={() => setShowPayment(true)}>
+              <Sparkles size={16} /> Subscribe Now
+            </button>
+            <button className="btn" onClick={() => navigate('/provider/subscription')}>
+              Learn More
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="stats-grid" style={{ marginBottom: 24 }}>
+        <div className="stat-card">
+          <div className="stat-icon amber"><Zap size={24} /></div>
+          <div className="stat-info">
+            <h3>{instantBookings.length}</h3>
+            <p>Instant Bookings</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon blue"><ShieldCheck size={24} /></div>
+          <div className="stat-info">
+            <h3>{isProActive ? 'Active' : 'Inactive'}</h3>
+            <p>Subscription Status</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon teal"><Briefcase size={24} /></div>
+          <div className="stat-info">
+            <h3>{jobs.length}</h3>
+            <p>Total Jobs</p>
+          </div>
+        </div>
+      </div>
+
+      {isProActive && (
+        <>
+          <div className="card" style={{ padding: 24, borderRadius: 16, marginBottom: 24 }}>
+            <h3 style={{ marginBottom: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Zap size={18} style={{ color: '#f59e0b' }} /> Instant Bookings
+            </h3>
+            {instantBookings.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--color-text-secondary)', fontSize: 14 }}>
+                No instant bookings yet. They will appear here when customers book via instant booking.
+              </div>
+            ) : (
+              <div className="table-wrapper">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Customer</th>
+                      <th>Service</th>
+                      <th>Status</th>
+                      <th>Price</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {instantBookings.map((b) => (
+                      <tr key={b.id}>
+                        <td>{b.customer_name || 'N/A'}</td>
+                        <td>{b.service_name || 'N/A'}</td>
+                        <td><span className={`badge badge-${b.status === 'accepted' ? 'info' : b.status === 'completed' ? 'success' : 'neutral'}`}>{b.status}</span></td>
+                        <td>৳{Number(b.total_price).toLocaleString()}</td>
+                        <td>{new Date(b.created_at).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+        </>
+      )}
+
+      <div className="card" style={{ padding: 32, borderRadius: 16 }}>
+        <h3 style={{ marginBottom: 16, fontWeight: 700 }}>Priyo Pro Benefits</h3>
+        <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+          {[
+            { icon: <Zap size={20} />, title: 'Instant Booking', desc: 'Get auto-assigned to nearby customers who use instant booking' },
+            { icon: <Users size={20} />, title: 'Priyo Workshop', desc: 'Customers who have Priyo Pro can save you as a favorite provider for quick rebooking' },
+            { icon: <ShieldCheck size={20} />, title: 'Priority Support', desc: 'Get faster responses from our support team' },
+            { icon: <Crown size={20} />, title: 'Priority Visibility', desc: 'Your services appear higher in search results' },
+          ].map((b, i) => (
+            <div key={i} style={{ display: 'flex', gap: 12, padding: 16, borderRadius: 12, background: '#f9fafb', alignItems: 'flex-start' }}>
+              <div style={{ color: '#f59e0b', flexShrink: 0, marginTop: 2 }}>{b.icon}</div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{b.title}</div>
+                <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>{b.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {showPayment && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.5)', padding: 20,
+        }} onClick={() => !subscribing && setShowPayment(false)}>
+          <div className="card" style={{
+            maxWidth: 480, width: '100%', padding: 32, borderRadius: 20,
+            position: 'relative',
+          }} onClick={e => e.stopPropagation()}>
+            <button style={{
+              position: 'absolute', top: 16, right: 16, background: 'none', border: 'none',
+              cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: 20,
+            }} onClick={() => setShowPayment(false)} disabled={subscribing}>
+              <X size={20} />
+            </button>
+            <h3 style={{ marginBottom: 8, fontWeight: 700 }}>Subscribe to Priyo Pro</h3>
+            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', marginBottom: 24 }}>
+              Pay ৳500/month to unlock all Pro benefits
+            </p>
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, display: 'block' }}>
+                Select Payment Method
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                {[
+                  { id: 'bkash', label: 'bKash', icon: '💳' },
+                  { id: 'nagad', label: 'Nagad', icon: '📱' },
+                  { id: 'card', label: 'Card', icon: '💳' },
+                  { id: 'bank', label: 'Bank', icon: '🏦' },
+                ].map(m => (
+                  <button key={m.id}
+                    onClick={() => setPaymentMethod(m.id)}
+                    style={{
+                      padding: '12px 8px', borderRadius: 10, border: paymentMethod === m.id ? '2px solid #f59e0b' : '1px solid var(--color-border)',
+                      background: paymentMethod === m.id ? '#fefce8' : 'transparent',
+                      cursor: 'pointer', textAlign: 'center',
+                    }}>
+                    <div style={{ fontSize: 24, marginBottom: 4 }}>{m.icon}</div>
+                    <div style={{ fontSize: 11, fontWeight: 600 }}>{m.label}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>
+                MFS Transaction ID
+              </label>
+              <input type="text" className="form-input"
+                placeholder={`Enter ${paymentMethod === 'bkash' ? 'bKash' : paymentMethod === 'nagad' ? 'Nagad' : 'MFS'} transaction ID`}
+                value={transactionId} onChange={e => setTransactionId(e.target.value)}
+                style={{ width: '100%', padding: '12px 16px', borderRadius: 10, border: '1px solid var(--color-border)', fontSize: 14 }}
+                disabled={subscribing} />
+              <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 6 }}>
+                Send ৳500 to the MeramotHub {paymentMethod === 'bkash' ? 'bKash' : paymentMethod === 'nagad' ? 'Nagad' : 'MFS'} number and enter the transaction ID above
+              </p>
+            </div>
+            <button className="btn btn-primary btn-lg" style={{ width: '100%' }}
+              onClick={handlePayAndSubscribe} disabled={subscribing}>
+              {subscribing ? 'Processing...' : 'Pay & Subscribe'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProviderDashboard() {
   const { user, isVerified, isApproved } = useAuth();
 
@@ -1051,6 +1347,7 @@ export default function ProviderDashboard() {
         label: 'Main',
         items: [
           { name: 'Overview', path: '/provider', icon: <LayoutDashboard size={18} /> },
+          { name: 'Subscription', path: '/provider/subscription', icon: <Crown size={18} /> },
         ],
       },
     ];
@@ -1075,6 +1372,8 @@ export default function ProviderDashboard() {
         <Route path="post-job" element={<PostJob />} />
         <Route path="profile" element={<ProviderProfile />} />
         <Route path="account" element={<ProfilePage />} />
+        <Route path="priyo" element={<PriyoCustomer />} />
+        <Route path="subscription" element={<SubscriptionPage />} />
         <Route path="messages" element={<ChatPage />} />
         <Route path="messages/:userId" element={<ChatPage />} />
         <Route path="*" element={<Navigate to="/provider" replace />} />

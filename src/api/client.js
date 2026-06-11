@@ -161,6 +161,10 @@ class ApiClient {
     return this.get('/providers/profile/me');
   }
 
+  verifyProvider(id, data) {
+    return this.patch(`/providers/${id}/verify`, data);
+  }
+
   // ──── Bookings ────
   createBooking(data) {
     return this.post('/bookings/', data);
@@ -337,12 +341,16 @@ class ApiClient {
   }
 
   // ──── Priyo / Subscription ────
-  subscribePriyo(plan = 'priyo_basic') {
-    return this.post('/priyo/subscribe', { plan_name: plan });
+  subscribePriyo(plan = 'priyo_basic', mfsTransactionId = '') {
+    return this.post('/priyo/subscribe', { plan_name: plan, mfs_transaction_id: mfsTransactionId });
   }
 
   getSubscription() {
     return this.get('/priyo/subscription');
+  }
+
+  checkSubscription() {
+    return this.get('/priyo/check-subscription');
   }
 
   unsubscribePriyo() {
