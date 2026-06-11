@@ -137,9 +137,9 @@ export default function ProfilePage() {
         <p>Manage your personal information</p>
       </div>
 
-      <div className="card" style={{ padding: 'var(--space-xl)' }}>
+      <div className="card" style={{ padding: '40px', maxWidth: '850px', margin: '0 auto' }}>
         <form onSubmit={handleSave}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: 'var(--space-xl)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: '32px' }}>
             <div className="sidebar-avatar" style={{ width: 80, height: 80, fontSize: '2rem' }}>
               {user?.full_name?.charAt(0)?.toUpperCase()}
             </div>
@@ -149,157 +149,165 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">
-              <User size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
-              Full Name
-            </label>
-            <input
-              className="form-input"
-              value={form.full_name}
-              onChange={e => handleChange('full_name', e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">
-              <Phone size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
-              Phone Number
-            </label>
-            <input
-              className="form-input"
-              value={form.phone_number}
-              onChange={e => handleChange('phone_number', e.target.value)}
-              placeholder="01XXXXXXXXX"
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">
-              <Mail size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
-              Email
-            </label>
-            <input
-              className="form-input"
-              type="email"
-              placeholder="your@email.com"
-              value={form.email}
-              onChange={e => handleChange('email', e.target.value)}
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">
-              <Shield size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
-              Account Type
-            </label>
-            <input
-              className="form-input"
-              value={roleMap[user?.role] || user?.role}
-              disabled
-              style={{ opacity: 0.6, cursor: 'not-allowed' }}
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">
-              <CreditCard size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
-              NID Number
-            </label>
-            <input
-              className="form-input"
-              value={form.nid_number}
-              onChange={e => handleChange('nid_number', e.target.value)}
-              placeholder="Enter your NID number"
-              disabled={user?.role === 'service_provider'}
-              style={user?.role === 'service_provider' ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
-            />
-            {user?.role === 'service_provider' && (
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
-                NID is set during provider registration
-              </span>
-            )}
-          </div>
-
-          {isProvider && (
-            <div className="form-group">
-              <label className="form-label">
-                <Image size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
-                NID Image
+          <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+            <div className="form-group" style={{ textAlign: 'center', alignItems: 'center' }}>
+              <label className="form-label" style={{ justifyContent: 'center', display: 'flex' }}>
+                <User size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
+                Full Name
               </label>
+              <input
+                className="form-input"
+                value={form.full_name}
+                onChange={e => handleChange('full_name', e.target.value)}
+                required
+                style={{ textAlign: 'center' }}
+              />
+            </div>
 
-              {nidImageUrl ? (
-                <div style={{
-                  border: '1px solid #e5e7eb', borderRadius: 12, padding: 12,
-                  display: 'flex', alignItems: 'center', gap: 12, background: '#fff',
-                }}>
-                  <div style={{
-                    width: 48, height: 48, borderRadius: 8, overflow: 'hidden',
-                    background: '#f3f4f6', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <span style={{ fontSize: 20 }}>📄</span>
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: '#111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {nidFileName || 'NID image'}
-                    </div>
-                    <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
-                      {nidFileSize ? formatFileSize(nidFileSize) : 'Image'} {nidImageUrl !== (user?.nid_image_url || '') && <span style={{ color: '#22c55e', fontWeight: 600 }}>• Uploaded</span>}
-                    </div>
-                  </div>
-                  {nidImageUrl !== (user?.nid_image_url || '') && (
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
-                  )}
-                  <div onClick={() => { try { setNidImageUrl(''); setNidFileName(''); setNidFileSize(0); setDirty(true); } catch (e) { console.error(e); } }}
-                    style={{
-                      width: 32, height: 32, borderRadius: 8, border: 'none', background: '#f3f4f6',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                      color: '#6b7280', fontSize: 16, flexShrink: 0, lineHeight: 1, userSelect: 'none',
-                    }}
-                    title="Remove file"
-                  >✕</div>
-                </div>
-              ) : uploadingNid ? (
-                <div style={{
-                  border: '1px solid #e5e7eb', borderRadius: 12, padding: 20, background: '#fafafa',
-                }}>
-                  <div style={{ fontWeight: 600, color: '#374151', marginBottom: 10, fontSize: 13 }}>Uploading {nidFileName || 'image'}…</div>
-                  <div style={{ width: '100%', height: 6, background: '#e5e7eb', borderRadius: 3, overflow: 'hidden' }}>
-                    <div style={{
-                      width: '70%', height: '100%',
-                      background: 'linear-gradient(90deg, #2563eb 30%, #60a5fa 50%, #2563eb 70%)',
-                      backgroundSize: '200% 100%', borderRadius: 3,
-                      animation: 'shimmer 1s infinite',
-                    }} />
-                  </div>
-                </div>
-              ) : (
-                <label
-                  onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#2563eb'; e.currentTarget.style.background = '#eff6ff'; }}
-                  onDragLeave={e => { e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.background = '#f9fafb'; }}
-                  onDrop={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.background = '#f9fafb'; uploadNidFile(e.dataTransfer.files[0]); }}
-                  style={{
-                    border: '2px dashed #d1d5db', borderRadius: 12, padding: 32,
-                    textAlign: 'center', cursor: 'pointer', transition: 'all .2s',
-                    background: '#f9fafb', userSelect: 'none', display: 'block',
-                  }}
-                >
-                  <div style={{ fontSize: 36, marginBottom: 8, lineHeight: 1 }}>📄</div>
-                  <p style={{ fontWeight: 600, color: '#374151', marginBottom: 4, fontSize: 14 }}>Drag & drop NID image here</p>
-                  <p style={{ fontSize: 13, color: '#6b7280' }}>
-                    or <span style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline' }}>click to choose file</span>
-                  </p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={e => { uploadNidFile(e.target.files?.[0]); if (e.target) e.target.value = ''; }}
-                  />
-                </label>
+            <div className="form-group" style={{ textAlign: 'center', alignItems: 'center' }}>
+              <label className="form-label" style={{ justifyContent: 'center', display: 'flex' }}>
+                <Phone size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
+                Phone Number
+              </label>
+              <input
+                className="form-input"
+                value={form.phone_number}
+                onChange={e => handleChange('phone_number', e.target.value)}
+                placeholder="01XXXXXXXXX"
+                style={{ textAlign: 'center' }}
+              />
+            </div>
+
+            <div className="form-group" style={{ textAlign: 'center', alignItems: 'center' }}>
+              <label className="form-label" style={{ justifyContent: 'center', display: 'flex' }}>
+                <Mail size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
+                Email
+              </label>
+              <input
+                className="form-input"
+                type="email"
+                placeholder="your@email.com"
+                value={form.email}
+                onChange={e => handleChange('email', e.target.value)}
+                style={{ textAlign: 'center' }}
+              />
+            </div>
+
+            <div className="form-group" style={{ textAlign: 'center', alignItems: 'center' }}>
+              <label className="form-label" style={{ justifyContent: 'center', display: 'flex' }}>
+                <Shield size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
+                Account Type
+              </label>
+              <input
+                className="form-input"
+                value={roleMap[user?.role] || user?.role}
+                disabled
+                style={{ opacity: 0.6, cursor: 'not-allowed', textAlign: 'center' }}
+              />
+            </div>
+
+            <div className="form-group" style={{ textAlign: 'center', alignItems: 'center' }}>
+              <label className="form-label" style={{ justifyContent: 'center', display: 'flex' }}>
+                <CreditCard size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
+                NID Number
+              </label>
+              <input
+                className="form-input"
+                value={form.nid_number}
+                onChange={e => handleChange('nid_number', e.target.value)}
+                placeholder="Enter your NID number"
+                disabled={user?.role === 'service_provider'}
+                style={{ textAlign: 'center', ...(user?.role === 'service_provider' ? { opacity: 0.6, cursor: 'not-allowed' } : {}) }}
+              />
+              {user?.role === 'service_provider' && (
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
+                  NID is set during provider registration
+                </span>
               )}
             </div>
-          )}
+
+            {isProvider && (
+              <div className="form-group" style={{ textAlign: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
+                <label className="form-label" style={{ justifyContent: 'center', display: 'flex' }}>
+                  <Image size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
+                  NID Image
+                </label>
+
+                {nidImageUrl ? (
+                  <div style={{
+                    border: '1px solid #e5e7eb', borderRadius: 12, padding: 12,
+                    display: 'flex', alignItems: 'center', gap: 12, background: '#fff',
+                    width: '100%', maxWidth: '100%'
+                  }}>
+                    <div style={{
+                      width: 48, height: 48, borderRadius: 8, overflow: 'hidden',
+                      background: '#f3f4f6', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <span style={{ fontSize: 20 }}>📄</span>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                      <div style={{ fontWeight: 600, fontSize: 13, color: '#111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {nidFileName || 'NID image'}
+                      </div>
+                      <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
+                        {nidFileSize ? formatFileSize(nidFileSize) : 'Image'} {nidImageUrl !== (user?.nid_image_url || '') && <span style={{ color: '#22c55e', fontWeight: 600 }}>• Uploaded</span>}
+                      </div>
+                    </div>
+                    {nidImageUrl !== (user?.nid_image_url || '') && (
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+                    )}
+                    <div onClick={() => { try { setNidImageUrl(''); setNidFileName(''); setNidFileSize(0); setDirty(true); } catch (e) { console.error(e); } }}
+                      style={{
+                        width: 32, height: 32, borderRadius: 8, border: 'none', background: '#f3f4f6',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                        color: '#6b7280', fontSize: 16, flexShrink: 0, lineHeight: 1, userSelect: 'none',
+                      }}
+                      title="Remove file"
+                    >✕</div>
+                  </div>
+                ) : uploadingNid ? (
+                  <div style={{
+                    border: '1px solid #e5e7eb', borderRadius: 12, padding: 20, background: '#fafafa',
+                    width: '100%', maxWidth: '100%'
+                  }}>
+                    <div style={{ fontWeight: 600, color: '#374151', marginBottom: 10, fontSize: 13 }}>Uploading {nidFileName || 'image'}…</div>
+                    <div style={{ width: '100%', height: 6, background: '#e5e7eb', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{
+                        width: '70%', height: '100%',
+                        background: 'linear-gradient(90deg, #2563eb 30%, #60a5fa 50%, #2563eb 70%)',
+                        backgroundSize: '200% 100%', borderRadius: 3,
+                        animation: 'shimmer 1s infinite',
+                      }} />
+                    </div>
+                  </div>
+                ) : (
+                  <label
+                    onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#2563eb'; e.currentTarget.style.background = '#eff6ff'; }}
+                    onDragLeave={e => { e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.background = '#f9fafb'; }}
+                    onDrop={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.background = '#f9fafb'; uploadNidFile(e.dataTransfer.files[0]); }}
+                    style={{
+                      border: '2px dashed #d1d5db', borderRadius: 12, padding: 32,
+                      textAlign: 'center', cursor: 'pointer', transition: 'all .2s',
+                      background: '#f9fafb', userSelect: 'none', display: 'block',
+                      width: '100%', maxWidth: '100%'
+                    }}
+                  >
+                    <div style={{ fontSize: 36, marginBottom: 8, lineHeight: 1 }}>📄</div>
+                    <p style={{ fontWeight: 600, color: '#374151', marginBottom: 4, fontSize: 14 }}>Drag & drop NID image here</p>
+                    <p style={{ fontSize: 13, color: '#6b7280' }}>
+                      or <span style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline' }}>click to choose file</span>
+                    </p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={e => { uploadNidFile(e.target.files?.[0]); if (e.target) e.target.value = ''; }}
+                    />
+                  </label>
+                )}
+              </div>
+            )}
+          </div>
 
           <LocationPicker
             label="Address"
@@ -310,7 +318,7 @@ export default function ProfilePage() {
             onLocationChange={handleLocationChange}
           />
 
-          <div className="form-actions" style={{ marginTop: 32, display: 'flex', gap: 12 }}>
+          <div className="form-actions" style={{ marginTop: 32, display: 'flex', gap: 12, justifyContent: 'center' }}>
             <button type="submit" className="btn btn-primary" disabled={saving || !dirty}>
               <Save size={16} style={{ marginRight: 6 }} />
               {saving ? 'Saving...' : 'Save Changes'}
