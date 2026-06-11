@@ -162,9 +162,9 @@ export default function LocationPicker({
     : [];
 
   return (
-    <div style={{ marginBottom: 16 }}>
-      <label className="form-label">{label}</label>
-      <div style={{ position: 'relative', marginTop: 6, marginBottom: 8 }}>
+    <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <label className="form-label" style={{ justifyContent: 'center', display: 'flex', width: '100%' }}>{label}</label>
+      <div style={{ position: 'relative', marginTop: 6, marginBottom: 8, width: '100%', maxWidth: '500px' }}>
         <input
           type="text"
           className="form-input"
@@ -173,6 +173,7 @@ export default function LocationPicker({
           onChange={e => setSearchQuery(e.target.value)}
           onFocus={() => results.length > 0 && setShowResults(true)}
           onBlur={() => setTimeout(() => setShowResults(false), 200)}
+          style={{ textAlign: 'center' }}
         />
         {searching && <span style={{ position: 'absolute', right: 12, top: 12, fontSize: 12, color: '#888' }}>Searching...</span>}
         {showResults && results.length > 0 && (
@@ -199,6 +200,7 @@ export default function LocationPicker({
           borderRadius: 8,
           padding: '8px 12px', marginBottom: 8, fontSize: 14, display: 'flex',
           justifyContent: 'space-between', alignItems: 'center',
+          width: '100%', maxWidth: '500px'
         }}>
           <span>
             {distMethod === 'road' ? '🛣️ ' : '📏 '}
@@ -212,6 +214,7 @@ export default function LocationPicker({
         <div style={{
           background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8,
           padding: '8px 12px', marginBottom: 8, fontSize: 13, color: '#666',
+          width: '100%', maxWidth: '500px'
         }}>
           ⏳ Calculating road distance…
         </div>
@@ -221,12 +224,13 @@ export default function LocationPicker({
         <div style={{
           background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 8,
           padding: '8px 12px', marginBottom: 8, fontSize: 13, color: '#92400e',
+          width: '100%', maxWidth: '500px'
         }}>
           Provider location not available — distance cannot be shown.
         </div>
       )}
 
-      <div style={{ height: 350, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+      <div style={{ height: 350, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border-light)', width: '100%' }}>
         <MapContainer center={defaultCenter} zoom={defaultZoom} style={{ height: '100%', width: '100%' }}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
